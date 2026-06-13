@@ -1,0 +1,35 @@
+import type { ReactNode } from "react";
+import { BottomNav } from "./BottomNav";
+
+export function Shell({ children }: { children: ReactNode }) {
+  return (
+    <div className="relative mx-auto min-h-screen max-w-md pb-32">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-32 -left-20 h-72 w-72 rounded-full bg-purple/20 blur-3xl" />
+        <div className="absolute top-40 -right-20 h-80 w-80 rounded-full bg-primary/15 blur-3xl" />
+      </div>
+      {children}
+      <BottomNav />
+    </div>
+  );
+}
+
+export function ScreenHeader({ title, back, right }: { title: string; back?: boolean; right?: ReactNode }) {
+  return (
+    <header className="sticky top-0 z-40 flex items-center justify-between px-5 py-4 backdrop-blur-xl">
+      <div className="w-9">
+        {back && (
+          <button
+            onClick={() => window.history.back()}
+            className="glass flex h-9 w-9 items-center justify-center rounded-full"
+            aria-label="Back"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+        )}
+      </div>
+      <h1 className="text-base font-semibold tracking-tight">{title}</h1>
+      <div className="flex w-9 justify-end">{right}</div>
+    </header>
+  );
+}
