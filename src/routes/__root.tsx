@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
+import { SplashScreen } from "@/components/SplashScreen";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -123,6 +124,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
+          <SplashScreen />
           <Outlet />
           <Toaster richColors theme="system" position="top-center" />
         </AuthProvider>
