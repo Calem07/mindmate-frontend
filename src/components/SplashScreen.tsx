@@ -63,7 +63,6 @@ export function SplashScreen() {
             </div>
             <Link
               to="/auth"
-              search={{ mode: "signup" }}
               onClick={() => sessionStorage.setItem("mindmate-splash-shown", "1")}
               className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-primary py-4 text-sm font-semibold text-white shadow-lg shadow-purple/30"
             >
@@ -72,7 +71,6 @@ export function SplashScreen() {
             </Link>
             <Link
               to="/auth"
-              search={{ mode: "signin" }}
               onClick={() => sessionStorage.setItem("mindmate-splash-shown", "1")}
               className="glass flex w-full items-center justify-center rounded-2xl py-3.5 text-sm font-semibold"
             >

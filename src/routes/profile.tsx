@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Settings, Award, Cog, Bell, Shield, HelpCircle, ChevronRight, BarChart3, LogOut, LogIn, Sun, Moon } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Award, Cog, Bell, Shield, HelpCircle, ChevronRight, BarChart3, LogOut, Sun, Moon } from "lucide-react";
 import luna from "@/assets/luna.png";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { useAuth } from "@/components/AuthProvider";
