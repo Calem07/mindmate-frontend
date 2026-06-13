@@ -89,23 +89,13 @@ function Profile() {
       </section>
 
       <section className="px-5 pt-5">
-        {user ? (
-          <button
-            onClick={handleLogout}
-            className="glass flex w-full items-center justify-center gap-2 rounded-2xl p-3.5 text-sm font-semibold text-destructive"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </button>
-        ) : (
-          <Link
-            to="/auth"
-            className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-primary p-3.5 text-sm font-semibold text-white shadow-lg shadow-purple/30"
-          >
-            <LogIn className="h-4 w-4" />
-            Sign in or create account
-          </Link>
-        )}
+        <button
+          onClick={handleLogout}
+          className="glass flex w-full items-center justify-center gap-2 rounded-2xl p-3.5 text-sm font-semibold text-destructive"
+        >
+          <LogOut className="h-4 w-4" />
+          Log out
+        </button>
       </section>
     </Shell>
   );
