@@ -13,6 +13,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LunaRouteImport } from './routes/luna'
 import { Route as GrowthRouteImport } from './routes/growth'
 import { Route as GardenRouteImport } from './routes/garden'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ProfileRoute = ProfileRouteImport.update({
@@ -35,6 +36,11 @@ const GardenRoute = GardenRouteImport.update({
   path: '/garden',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/garden': typeof GardenRoute
   '/growth': typeof GrowthRoute
   '/luna': typeof LunaRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/garden': typeof GardenRoute
   '/growth': typeof GrowthRoute
   '/luna': typeof LunaRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/garden': typeof GardenRoute
   '/growth': typeof GrowthRoute
   '/luna': typeof LunaRoute
@@ -65,14 +74,15 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/garden' | '/growth' | '/luna' | '/profile'
+  fullPaths: '/' | '/auth' | '/garden' | '/growth' | '/luna' | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/garden' | '/growth' | '/luna' | '/profile'
-  id: '__root__' | '/' | '/garden' | '/growth' | '/luna' | '/profile'
+  to: '/' | '/auth' | '/garden' | '/growth' | '/luna' | '/profile'
+  id: '__root__' | '/' | '/auth' | '/garden' | '/growth' | '/luna' | '/profile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   GardenRoute: typeof GardenRoute
   GrowthRoute: typeof GrowthRoute
   LunaRoute: typeof LunaRoute
@@ -109,6 +119,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GardenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,6 +138,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   GardenRoute: GardenRoute,
   GrowthRoute: GrowthRoute,
   LunaRoute: LunaRoute,

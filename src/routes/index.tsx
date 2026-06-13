@@ -30,7 +30,7 @@ function Home() {
 
       {/* Luna Card */}
       <section className="px-5 pt-5">
-        <Link to="/luna" className="block">
+        <div className="block">
           <div className="glass-strong relative overflow-hidden rounded-3xl p-5 glow-purple">
             <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-purple/30 blur-3xl" />
             <div className="relative flex items-start gap-4">
@@ -63,8 +63,9 @@ function Home() {
               </Link>
             </div>
           </div>
-        </Link>
+        </div>
       </section>
+
 
       {/* Today's Focus */}
       <section className="px-5 pt-6">
