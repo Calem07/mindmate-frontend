@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Sparkles, Shield } from "lucide-react";
+
+const HIDDEN_ROUTES = ["/signin", "/signup", "/admin-login"];
 import luna from "@/assets/luna.png";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -25,7 +27,8 @@ export function SplashScreen() {
     }
   }, [minElapsed, loading, user, dismissed]);
 
-  if (dismissed) return null;
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  if (dismissed || HIDDEN_ROUTES.includes(pathname)) return null;
 
   const showAuthCta = minElapsed && !loading && !user;
 
