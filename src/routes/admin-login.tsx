@@ -45,7 +45,7 @@ function AdminLoginPage() {
       }
 
       toast.success("Welcome, admin 🛡️");
-      navigate({ to: "/" });
+      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Admin sign in failed");
     } finally {

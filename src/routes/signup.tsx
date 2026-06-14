@@ -26,7 +26,7 @@ function SignUpPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/" });
+    if (!loading && user) { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
   }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +43,7 @@ function SignUpPage() {
       });
       if (error) throw error;
       toast.success("Welcome to MindMate! Check your email to confirm.");
-      navigate({ to: "/" });
+      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign up failed");
     } finally {
@@ -61,7 +61,7 @@ function SignUpPage() {
         return;
       }
       if (result.redirected) return;
-      navigate({ to: "/" });
+      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign-in failed");
       setBusy(false);
