@@ -103,6 +103,12 @@ function SignInPage() {
             Sign in
             <ArrowRight className="h-4 w-4" />
           </button>
+
+          <div className="pt-1 text-center">
+            <Link to="/forgot-password" className="text-xs font-medium text-muted-foreground hover:text-primary">
+              Forgot password?
+            </Link>
+          </div>
         </form>
 
         <div className="my-4 flex items-center gap-3 text-[10px] uppercase tracking-wider text-muted-foreground">
