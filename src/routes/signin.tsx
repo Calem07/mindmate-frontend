@@ -25,7 +25,7 @@ function SignInPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/" });
+    if (!loading && user) { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
   }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +35,7 @@ function SignInPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success("Welcome back 💜");
-      navigate({ to: "/" });
+      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign in failed");
     } finally {
@@ -53,7 +53,7 @@ function SignInPage() {
         return;
       }
       if (result.redirected) return;
-      navigate({ to: "/" });
+      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign-in failed");
       setBusy(false);
