@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Sparkles, Shield } from "lucide-react";
 
-const HIDDEN_ROUTES = ["/signin", "/signup", "/admin-login"];
+const HIDDEN_ROUTES = ["/signin", "/signup", "/admin-login", "/forgot-password", "/reset-password"];
 import luna from "@/assets/luna.png";
 import { useAuth } from "@/components/AuthProvider";
 
