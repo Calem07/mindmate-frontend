@@ -1,5 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Award, Cog, Bell, Shield, HelpCircle, ChevronRight, BarChart3, LogOut, Sun, Moon } from "lucide-react";
+
 import luna from "@/assets/luna.png";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { useAuth } from "@/components/AuthProvider";
@@ -80,12 +81,12 @@ function Profile() {
 
       <section className="px-5 pt-5">
         <div className="space-y-2">
-          <Row icon={Award} label="Achievements" />
-          <Row icon={BarChart3} label="Analytics" />
-          <Row icon={Cog} label="Settings" />
-          <Row icon={Bell} label="Notifications" />
-          <Row icon={Shield} label="Privacy" />
-          <Row icon={HelpCircle} label="Help & Support" />
+          <Row to="/badges" icon={Award} label="Badges & Challenges" />
+          <Row to="/insights" icon={BarChart3} label="Insights" />
+          <Row to="/settings" icon={Cog} label="Settings" />
+          <Row to="/settings" icon={Bell} label="Notifications" />
+          <Row to="/settings" icon={Shield} label="Privacy" />
+          <Row to="/settings" icon={HelpCircle} label="Help & Support" />
         </div>
       </section>
 
@@ -102,14 +103,15 @@ function Profile() {
   );
 }
 
-function Row({ icon: Icon, label }: { icon: typeof Award; label: string }) {
+function Row({ icon: Icon, label, to }: { icon: typeof Award; label: string; to: string }) {
   return (
-    <button className="glass flex w-full items-center gap-3 rounded-2xl p-3.5 text-left">
+    <Link to={to} className="glass flex w-full items-center gap-3 rounded-2xl p-3.5 text-left">
       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
         <Icon className="h-4 w-4 text-primary" />
       </div>
       <span className="flex-1 text-sm font-medium">{label}</span>
       <ChevronRight className="h-4 w-4 text-muted-foreground" />
-    </button>
+    </Link>
   );
 }
+

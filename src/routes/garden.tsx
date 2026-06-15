@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Settings, Leaf, ClipboardCheck, Droplet, BookOpen, Heart, Target } from "lucide-react";
 import tree from "@/assets/tree.jpg";
+
 import { Shell, ScreenHeader } from "@/components/Shell";
 
 export const Route = createFileRoute("/garden")({
@@ -73,18 +74,19 @@ function Garden() {
         <p className="text-xs text-muted-foreground">Your actions help your garden grow</p>
         <div className="mt-3 grid grid-cols-5 gap-2">
           {[
-            { icon: ClipboardCheck, label: "Check-In" },
-            { icon: Droplet, label: "Habits" },
-            { icon: BookOpen, label: "Journal" },
-            { icon: Heart, label: "Gratitude" },
-            { icon: Target, label: "Focus" },
-          ].map(({ icon: Icon, label }) => (
-            <button key={label} className="glass flex flex-col items-center gap-1.5 rounded-2xl p-3">
+            { icon: ClipboardCheck, label: "Check-In", to: "/check-in" as const },
+            { icon: Droplet, label: "Habits", to: "/habits" as const },
+            { icon: BookOpen, label: "Journal", to: "/journal" as const },
+            { icon: Heart, label: "Gratitude", to: "/journal" as const },
+            { icon: Target, label: "Focus", to: "/exam-focus" as const },
+          ].map(({ icon: Icon, label, to }) => (
+            <Link key={label} to={to} className="glass flex flex-col items-center gap-1.5 rounded-2xl p-3">
               <Icon className="h-5 w-5 text-primary" />
               <span className="text-[10px] font-medium">{label}</span>
-            </button>
+            </Link>
           ))}
         </div>
+
       </section>
     </Shell>
   );

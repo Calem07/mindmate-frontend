@@ -11,12 +11,22 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReflectionsRouteImport } from './routes/reflections'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LunaRouteImport } from './routes/luna'
+import { Route as JournalRouteImport } from './routes/journal'
+import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as HabitsRouteImport } from './routes/habits'
 import { Route as GrowthRouteImport } from './routes/growth'
+import { Route as GoalsRouteImport } from './routes/goals'
 import { Route as GardenRouteImport } from './routes/garden'
+import { Route as FutureMeRouteImport } from './routes/future-me'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ExamFocusRouteImport } from './routes/exam-focus'
+import { Route as CheckInRouteImport } from './routes/check-in'
+import { Route as BadgesRouteImport } from './routes/badges'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,9 +40,19 @@ const SigninRoute = SigninRouteImport.update({
   path: '/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReflectionsRoute = ReflectionsRouteImport.update({
+  id: '/reflections',
+  path: '/reflections',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -45,9 +65,29 @@ const LunaRoute = LunaRouteImport.update({
   path: '/luna',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JournalRoute = JournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsightsRoute = InsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HabitsRoute = HabitsRouteImport.update({
+  id: '/habits',
+  path: '/habits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GrowthRoute = GrowthRouteImport.update({
   id: '/growth',
   path: '/growth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoalsRoute = GoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GardenRoute = GardenRouteImport.update({
@@ -55,9 +95,29 @@ const GardenRoute = GardenRouteImport.update({
   path: '/garden',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FutureMeRoute = FutureMeRouteImport.update({
+  id: '/future-me',
+  path: '/future-me',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExamFocusRoute = ExamFocusRouteImport.update({
+  id: '/exam-focus',
+  path: '/exam-focus',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckInRoute = CheckInRouteImport.update({
+  id: '/check-in',
+  path: '/check-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BadgesRoute = BadgesRouteImport.update({
+  id: '/badges',
+  path: '/badges',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -74,24 +134,44 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/badges': typeof BadgesRoute
+  '/check-in': typeof CheckInRoute
+  '/exam-focus': typeof ExamFocusRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/future-me': typeof FutureMeRoute
   '/garden': typeof GardenRoute
+  '/goals': typeof GoalsRoute
   '/growth': typeof GrowthRoute
+  '/habits': typeof HabitsRoute
+  '/insights': typeof InsightsRoute
+  '/journal': typeof JournalRoute
   '/luna': typeof LunaRoute
   '/profile': typeof ProfileRoute
+  '/reflections': typeof ReflectionsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/badges': typeof BadgesRoute
+  '/check-in': typeof CheckInRoute
+  '/exam-focus': typeof ExamFocusRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/future-me': typeof FutureMeRoute
   '/garden': typeof GardenRoute
+  '/goals': typeof GoalsRoute
   '/growth': typeof GrowthRoute
+  '/habits': typeof HabitsRoute
+  '/insights': typeof InsightsRoute
+  '/journal': typeof JournalRoute
   '/luna': typeof LunaRoute
   '/profile': typeof ProfileRoute
+  '/reflections': typeof ReflectionsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
 }
@@ -99,12 +179,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/badges': typeof BadgesRoute
+  '/check-in': typeof CheckInRoute
+  '/exam-focus': typeof ExamFocusRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/future-me': typeof FutureMeRoute
   '/garden': typeof GardenRoute
+  '/goals': typeof GoalsRoute
   '/growth': typeof GrowthRoute
+  '/habits': typeof HabitsRoute
+  '/insights': typeof InsightsRoute
+  '/journal': typeof JournalRoute
   '/luna': typeof LunaRoute
   '/profile': typeof ProfileRoute
+  '/reflections': typeof ReflectionsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
 }
@@ -113,36 +203,66 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin-login'
+    | '/badges'
+    | '/check-in'
+    | '/exam-focus'
     | '/forgot-password'
+    | '/future-me'
     | '/garden'
+    | '/goals'
     | '/growth'
+    | '/habits'
+    | '/insights'
+    | '/journal'
     | '/luna'
     | '/profile'
+    | '/reflections'
     | '/reset-password'
+    | '/settings'
     | '/signin'
     | '/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin-login'
+    | '/badges'
+    | '/check-in'
+    | '/exam-focus'
     | '/forgot-password'
+    | '/future-me'
     | '/garden'
+    | '/goals'
     | '/growth'
+    | '/habits'
+    | '/insights'
+    | '/journal'
     | '/luna'
     | '/profile'
+    | '/reflections'
     | '/reset-password'
+    | '/settings'
     | '/signin'
     | '/signup'
   id:
     | '__root__'
     | '/'
     | '/admin-login'
+    | '/badges'
+    | '/check-in'
+    | '/exam-focus'
     | '/forgot-password'
+    | '/future-me'
     | '/garden'
+    | '/goals'
     | '/growth'
+    | '/habits'
+    | '/insights'
+    | '/journal'
     | '/luna'
     | '/profile'
+    | '/reflections'
     | '/reset-password'
+    | '/settings'
     | '/signin'
     | '/signup'
   fileRoutesById: FileRoutesById
@@ -150,12 +270,22 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  BadgesRoute: typeof BadgesRoute
+  CheckInRoute: typeof CheckInRoute
+  ExamFocusRoute: typeof ExamFocusRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  FutureMeRoute: typeof FutureMeRoute
   GardenRoute: typeof GardenRoute
+  GoalsRoute: typeof GoalsRoute
   GrowthRoute: typeof GrowthRoute
+  HabitsRoute: typeof HabitsRoute
+  InsightsRoute: typeof InsightsRoute
+  JournalRoute: typeof JournalRoute
   LunaRoute: typeof LunaRoute
   ProfileRoute: typeof ProfileRoute
+  ReflectionsRoute: typeof ReflectionsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SettingsRoute: typeof SettingsRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
 }
@@ -176,11 +306,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SigninRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reflections': {
+      id: '/reflections'
+      path: '/reflections'
+      fullPath: '/reflections'
+      preLoaderRoute: typeof ReflectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -197,11 +341,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LunaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journal': {
+      id: '/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/habits': {
+      id: '/habits'
+      path: '/habits'
+      fullPath: '/habits'
+      preLoaderRoute: typeof HabitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/growth': {
       id: '/growth'
       path: '/growth'
       fullPath: '/growth'
       preLoaderRoute: typeof GrowthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goals': {
+      id: '/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof GoalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/garden': {
@@ -211,11 +383,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GardenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/future-me': {
+      id: '/future-me'
+      path: '/future-me'
+      fullPath: '/future-me'
+      preLoaderRoute: typeof FutureMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exam-focus': {
+      id: '/exam-focus'
+      path: '/exam-focus'
+      fullPath: '/exam-focus'
+      preLoaderRoute: typeof ExamFocusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/check-in': {
+      id: '/check-in'
+      path: '/check-in'
+      fullPath: '/check-in'
+      preLoaderRoute: typeof CheckInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/badges': {
+      id: '/badges'
+      path: '/badges'
+      fullPath: '/badges'
+      preLoaderRoute: typeof BadgesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin-login': {
@@ -238,12 +438,22 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminLoginRoute: AdminLoginRoute,
+  BadgesRoute: BadgesRoute,
+  CheckInRoute: CheckInRoute,
+  ExamFocusRoute: ExamFocusRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  FutureMeRoute: FutureMeRoute,
   GardenRoute: GardenRoute,
+  GoalsRoute: GoalsRoute,
   GrowthRoute: GrowthRoute,
+  HabitsRoute: HabitsRoute,
+  InsightsRoute: InsightsRoute,
+  JournalRoute: JournalRoute,
   LunaRoute: LunaRoute,
   ProfileRoute: ProfileRoute,
+  ReflectionsRoute: ReflectionsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SettingsRoute: SettingsRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
 }

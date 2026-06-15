@@ -24,24 +24,25 @@ function computeTimeContext(h: number) {
 }
 
 function Home() {
-  // Default to a stable value for SSR; update on client to avoid hydration mismatch.
-  const [hour, setHour] = useState(9);
+  // Only render the time-dependent icon/greeting after mount to avoid SSR hydration mismatch.
+  const [hour, setHour] = useState<number | null>(null);
   useEffect(() => setHour(new Date().getHours()), []);
-  const { greeting, icon: TimeIcon, whisper } = computeTimeContext(hour);
+  const ctx = hour === null ? { greeting: "Hello,", icon: Moon, whisper: "Luna is here with you." } : computeTimeContext(hour);
+  const { greeting, icon: TimeIcon, whisper } = ctx;
   return (
     <Shell>
       <header className="flex items-start justify-between px-5 pt-6">
         <div>
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <TimeIcon className="h-3.5 w-3.5" />
+            {hour === null ? <span className="h-3.5 w-3.5" /> : <TimeIcon className="h-3.5 w-3.5" />}
             <span>{greeting}</span>
           </div>
           <h1 className="mt-0.5 text-2xl font-bold tracking-tight">Calem <span className="text-xl">💜</span></h1>
         </div>
-        <button className="glass relative flex h-11 w-11 items-center justify-center rounded-full" aria-label="Notifications">
+        <Link to="/check-in" className="glass relative flex h-11 w-11 items-center justify-center rounded-full" aria-label="Notifications">
           <Bell className="h-5 w-5" />
           <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-purple animate-pulse-glow" />
-        </button>
+        </Link>
       </header>
 
       {/* Luna Card */}
