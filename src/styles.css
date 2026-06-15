@@ -102,7 +102,11 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-  body { background-image: radial-gradient(ellipse at top, var(--bg-glow-1), transparent 60%), radial-gradient(ellipse at bottom, var(--bg-glow-2), transparent 60%); background-attachment: fixed; }
+  html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; overscroll-behavior-y: none; }
+  body { background-image: radial-gradient(ellipse at top, var(--bg-glow-1), transparent 60%), radial-gradient(ellipse at bottom, var(--bg-glow-2), transparent 60%); background-attachment: fixed; min-height: 100dvh; }
+  button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  input, textarea, select { font-size: 16px; } /* prevent iOS zoom on focus */
+  @media (min-width: 768px) { input, textarea, select { font-size: 14px; } }
 }
 
 @utility glass {

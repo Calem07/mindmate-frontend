@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Bell, ChevronRight, Droplet, Brain, MessageCircle, Sparkles, BookOpen, Moon, Sun, Sunrise, Leaf, Lock } from "lucide-react";
 import luna from "@/assets/luna.png";
 import tree from "@/assets/tree.jpg";
@@ -14,8 +15,7 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-function getTimeContext() {
-  const h = new Date().getHours();
+function computeTimeContext(h: number) {
   if (h < 5) return { greeting: "Still up,", icon: Moon, whisper: "The night is quiet. Luna is here with you." };
   if (h < 12) return { greeting: "Good morning,", icon: Sunrise, whisper: "A new day, a new little step. Let's grow together." };
   if (h < 17) return { greeting: "Good afternoon,", icon: Sun, whisper: "How's your heart doing right now? Luna's been thinking of you." };
@@ -24,7 +24,10 @@ function getTimeContext() {
 }
 
 function Home() {
-  const { greeting, icon: TimeIcon, whisper } = getTimeContext();
+  // Default to a stable value for SSR; update on client to avoid hydration mismatch.
+  const [hour, setHour] = useState(9);
+  useEffect(() => setHour(new Date().getHours()), []);
+  const { greeting, icon: TimeIcon, whisper } = computeTimeContext(hour);
   return (
     <Shell>
       <header className="flex items-start justify-between px-5 pt-6">

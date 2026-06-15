@@ -1,13 +1,18 @@
 import type { ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
+import { OfflineBanner } from "./OfflineBanner";
 
 export function Shell({ children }: { children: ReactNode }) {
   return (
-    <div className="relative mx-auto min-h-screen max-w-md pb-32">
+    <div
+      className="relative mx-auto min-h-[100dvh] max-w-md pb-32"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-32 -left-20 h-72 w-72 rounded-full bg-purple/20 blur-3xl" />
         <div className="absolute top-40 -right-20 h-80 w-80 rounded-full bg-primary/15 blur-3xl" />
       </div>
+      <OfflineBanner />
       {children}
       <BottomNav />
     </div>
