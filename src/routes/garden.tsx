@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Settings, Leaf, ClipboardCheck, Droplet, BookOpen, Heart, Target } from "lucide-react";
 import tree from "@/assets/tree.jpg";
+
 import { Shell, ScreenHeader } from "@/components/Shell";
 
 export const Route = createFileRoute("/garden")({
