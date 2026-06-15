@@ -125,7 +125,7 @@ function LunaScreen() {
               placeholder="Message Luna…"
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
-            <button onClick={send} className="flex h-10 w-10 items-center justify-center rounded-full gradient-primary">
+            <button onClick={() => send()} className="flex h-10 w-10 items-center justify-center rounded-full gradient-primary">
               <Send className="h-4 w-4 text-white" />
             </button>
           </div>
