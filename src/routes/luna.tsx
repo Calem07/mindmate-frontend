@@ -152,7 +152,7 @@ function LunaScreen() {
         setMessages((m) => m.map((x) => (x.id === msgId ? { ...x, status: "error" } : x)));
         return;
       }
-      const starter = starterSuggestions.find((s) => s.label.toLowerCase() === userText.toLowerCase());
+      const starter = contextSuggestions.find((s) => s.label.toLowerCase() === userText.toLowerCase());
       const reply = starter
         ? starter.reply
         : lunaReplies[Math.floor(Math.random() * lunaReplies.length)] + " " + lunaData.whispers[Math.floor(Math.random() * lunaData.whispers.length)];
