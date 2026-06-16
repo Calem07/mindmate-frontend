@@ -3,7 +3,7 @@ import { Settings, Play, Send, Heart, Award, Sparkles, Paperclip, Image as Image
 import luna from "@/assets/luna.png";
 import waves from "@/assets/waves.jpg";
 import { Shell, ScreenHeader } from "@/components/Shell";
-import { luna as lunaData } from "@/data/mock";
+import { luna as lunaData, lastCheckIn, habits } from "@/data/mock";
 import { EmptyState, ErrorState } from "@/components/StateViews";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -21,12 +21,92 @@ type Msg = {
   status?: "sending" | "sent" | "error";
 };
 
-const starterSuggestions = [
-  { label: "I'm feeling anxious", reply: "I hear you. Let's slow down together — name one thing your senses can feel right now. I'll wait with you." },
-  { label: "Help me focus", reply: "Got you. A 25-minute focus block with me by your side? I'll dim the noise and cheer at the end." },
-  { label: "I need a breath", reply: "Breathe in for 4… hold for 4… out for 6. One more round with me. You're safe in this moment." },
-  { label: "Tell me something kind", reply: "You showed up today, even quietly. That counts. I'm proud of the version of you that's still trying." },
-];
+type Suggestion = { label: string; reply: string; reason?: string };
+
+function buildContextSuggestions(): Suggestion[] {
+  const out: Suggestion[] = [];
+  const mood = lastCheckIn.mood;
+  const tags = lastCheckIn.tags;
+  const skipped = habits.filter((h) => h.status === "not_started");
+  const inProgress = habits.filter((h) => h.status === "in_progress");
+  const longestStreak = habits.reduce((a, b) => (b.streak > a.streak ? b : a), habits[0]);
+  const hour = new Date().getHours();
+
+  // Mood-aware
+  if (mood === "low" || mood === "rough") {
+    out.push({
+      label: "Yesterday felt heavy",
+      reason: `Your last check-in was ${mood}`,
+      reply: "I remember. Heavy days deserve softer mornings. Want to start with one slow breath instead of a list?",
+    });
+  } else if (mood === "okay") {
+    out.push({
+      label: "Help me lift today a little",
+      reason: "Yesterday was just okay",
+      reply: "Let's find one small bright thing. What's the easiest kind thing you could do for yourself in the next hour?",
+    });
+  } else {
+    out.push({
+      label: "Help me keep this momentum",
+      reason: `Yesterday felt ${mood}`,
+      reply: "Yes! Let's protect this energy. Pick one ritual to anchor it — even five minutes counts.",
+    });
+  }
+
+  // Sleep-aware
+  if (lastCheckIn.sleepHours < 7) {
+    out.push({
+      label: "I slept badly",
+      reason: `Only ${lastCheckIn.sleepHours}h of sleep`,
+      reply: "Tired bodies carry tired thoughts. Be gentle today. Water, light, and one easy win — that's the plan.",
+    });
+  }
+
+  // Tag-aware (exam stress)
+  if (tags.includes("exam-stress") || tags.includes("anxious")) {
+    out.push({
+      label: "Calm my exam nerves",
+      reason: "You mentioned exam stress",
+      reply: "Feet on the floor. Shoulders down. You've prepared more than your fear tells you. Want a 2-min grounding with me?",
+    });
+  }
+
+  // Habit-aware
+  if (skipped.length > 0) {
+    const h = skipped[0];
+    out.push({
+      label: `Nudge me on ${h.name.toLowerCase()}`,
+      reason: "Not started today",
+      reply: `No pressure — let's shrink it. Could you do just 10% of "${h.name}" right now? I'll be here when you're back.`,
+    });
+  }
+  if (inProgress.length > 0) {
+    const h = inProgress[0];
+    out.push({
+      label: `Finish ${h.name.toLowerCase()} with me`,
+      reason: "In progress",
+      reply: `You're already moving. Want me to set a quiet timer for the last stretch of "${h.name}"?`,
+    });
+  }
+  if (longestStreak && longestStreak.streak >= 5) {
+    out.push({
+      label: `Celebrate my ${longestStreak.streak}-day streak`,
+      reason: longestStreak.name,
+      reply: `${longestStreak.streak} days of "${longestStreak.name}" — that's not luck, that's you choosing yourself. I'm beaming.`,
+    });
+  }
+
+  // Time-aware
+  if (hour < 11) {
+    out.push({ label: "Set a soft intention", reason: "Morning", reply: "Beautiful. Finish this sentence with me: 'Today, I want to feel ___.'" });
+  } else if (hour >= 21) {
+    out.push({ label: "Help me wind down", reason: "Late evening", reply: "Dim the lights. One long exhale. Tomorrow can wait — let's land here first." });
+  } else {
+    out.push({ label: "I need a midday reset", reason: "Afternoon", reply: "Stand up, look far, drink water. 60 seconds. I'll wait — then we go again." });
+  }
+
+  return out.slice(0, 4);
+}
 
 const followupSuggestions = [
   "Why do I feel this way?",
@@ -58,6 +138,7 @@ function LunaScreen() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, typing]);
 
+  const contextSuggestions = useMemo(() => buildContextSuggestions(), []);
   const showStarters = useMemo(() => messages.filter((m) => m.from === "me").length === 0, [messages]);
 
   const respond = (userText: string, msgId: string) => {
@@ -71,7 +152,7 @@ function LunaScreen() {
         setMessages((m) => m.map((x) => (x.id === msgId ? { ...x, status: "error" } : x)));
         return;
       }
-      const starter = starterSuggestions.find((s) => s.label.toLowerCase() === userText.toLowerCase());
+      const starter = contextSuggestions.find((s) => s.label.toLowerCase() === userText.toLowerCase());
       const reply = starter
         ? starter.reply
         : lunaReplies[Math.floor(Math.random() * lunaReplies.length)] + " " + lunaData.whispers[Math.floor(Math.random() * lunaData.whispers.length)];
@@ -188,12 +269,36 @@ function LunaScreen() {
 
         {/* Suggestions */}
         {!typing && !error && (
-          <div className="flex flex-wrap gap-2 pl-11">
-            {(showStarters ? starterSuggestions.map((s) => s.label) : followupSuggestions).map((s) => (
-              <button key={s} onClick={() => send(s)} className="glass rounded-full px-3 py-1.5 text-[11px] font-semibold text-purple">
-                <Sparkles className="mr-1 inline h-3 w-3" />{s}
-              </button>
-            ))}
+          <div className="space-y-2 pl-11">
+            {showStarters && (
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Picked for you · based on yesterday's check-in
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {showStarters
+                ? contextSuggestions.map((s) => (
+                    <button
+                      key={s.label}
+                      onClick={() => send(s.label)}
+                      className="glass flex flex-col items-start gap-0.5 rounded-2xl px-3 py-2 text-left"
+                    >
+                      <span className="text-[11px] font-semibold text-purple">
+                        <Sparkles className="mr-1 inline h-3 w-3" />
+                        {s.label}
+                      </span>
+                      {s.reason && (
+                        <span className="text-[9px] text-muted-foreground">{s.reason}</span>
+                      )}
+                    </button>
+                  ))
+                : followupSuggestions.map((s) => (
+                    <button key={s} onClick={() => send(s)} className="glass rounded-full px-3 py-1.5 text-[11px] font-semibold text-purple">
+                      <Sparkles className="mr-1 inline h-3 w-3" />
+                      {s}
+                    </button>
+                  ))}
+            </div>
           </div>
         )}
 

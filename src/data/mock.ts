@@ -15,6 +15,15 @@ export const user = {
   joinedAt: "2025-04-12",
 };
 
+export const lastCheckIn = {
+  date: "2026-06-15",
+  mood: "low" as Mood,
+  energy: 3, // 1-5
+  sleepHours: 6,
+  note: "Couldn't quiet my mind before bed. Exam tomorrow.",
+  tags: ["anxious", "tired", "exam-stress"],
+};
+
 export const luna = {
   name: "Luna",
   level: 4,
