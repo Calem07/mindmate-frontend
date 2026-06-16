@@ -3,7 +3,7 @@ import { Settings, Play, Send, Heart, Award, Sparkles, Paperclip, Image as Image
 import luna from "@/assets/luna.png";
 import waves from "@/assets/waves.jpg";
 import { Shell, ScreenHeader } from "@/components/Shell";
-import { luna as lunaData, lastCheckIn, habits, user } from "@/data/mock";
+import { luna as lunaData, lastCheckIn, habits } from "@/data/mock";
 import { EmptyState, ErrorState } from "@/components/StateViews";
 import { useEffect, useMemo, useRef, useState } from "react";
 
