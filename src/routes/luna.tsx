@@ -269,12 +269,36 @@ function LunaScreen() {
 
         {/* Suggestions */}
         {!typing && !error && (
-          <div className="flex flex-wrap gap-2 pl-11">
-            {(showStarters ? starterSuggestions.map((s) => s.label) : followupSuggestions).map((s) => (
-              <button key={s} onClick={() => send(s)} className="glass rounded-full px-3 py-1.5 text-[11px] font-semibold text-purple">
-                <Sparkles className="mr-1 inline h-3 w-3" />{s}
-              </button>
-            ))}
+          <div className="space-y-2 pl-11">
+            {showStarters && (
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Picked for you · based on yesterday's check-in
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {showStarters
+                ? contextSuggestions.map((s) => (
+                    <button
+                      key={s.label}
+                      onClick={() => send(s.label)}
+                      className="glass flex flex-col items-start gap-0.5 rounded-2xl px-3 py-2 text-left"
+                    >
+                      <span className="text-[11px] font-semibold text-purple">
+                        <Sparkles className="mr-1 inline h-3 w-3" />
+                        {s.label}
+                      </span>
+                      {s.reason && (
+                        <span className="text-[9px] text-muted-foreground">{s.reason}</span>
+                      )}
+                    </button>
+                  ))
+                : followupSuggestions.map((s) => (
+                    <button key={s} onClick={() => send(s)} className="glass rounded-full px-3 py-1.5 text-[11px] font-semibold text-purple">
+                      <Sparkles className="mr-1 inline h-3 w-3" />
+                      {s}
+                    </button>
+                  ))}
+            </div>
           </div>
         )}
 
