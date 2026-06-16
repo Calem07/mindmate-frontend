@@ -138,6 +138,7 @@ function LunaScreen() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, typing]);
 
+  const contextSuggestions = useMemo(() => buildContextSuggestions(), []);
   const showStarters = useMemo(() => messages.filter((m) => m.from === "me").length === 0, [messages]);
 
   const respond = (userText: string, msgId: string) => {
