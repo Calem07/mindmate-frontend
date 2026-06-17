@@ -15,7 +15,7 @@ import {
   Moon,
   Cloud,
 } from "lucide-react";
-import tree from "@/assets/tree.jpg";
+import { LivingTree, type TreeStageKey } from "@/components/LivingTree";
 
 import { Shell, ScreenHeader } from "@/components/Shell";
 
@@ -30,21 +30,19 @@ export const Route = createFileRoute("/garden")({
 });
 
 type Stage = {
-  key: string;
+  key: TreeStageKey;
   emoji: string;
   title: string;
   xp: number;
   reward: string;
-  reached: boolean;
-  current?: boolean;
 };
 
 const stages: Stage[] = [
-  { key: "seed", emoji: "🌱", title: "Seed", xp: 0, reward: "First spark of light", reached: true },
-  { key: "sprout", emoji: "🌿", title: "Young Sprout", xp: 1000, reward: "Luna's lullaby unlocked", reached: true, current: true },
-  { key: "tree", emoji: "🌳", title: "Young Tree", xp: 2000, reward: "First Leaf badge", reached: false },
-  { key: "bloom", emoji: "🌸", title: "Blooming", xp: 3500, reward: "Petal soundscape", reached: false },
-  { key: "ancient", emoji: "🌟", title: "Ancient", xp: 6000, reward: "Mythic Luna form", reached: false },
+  { key: "seed", emoji: "🌱", title: "Seed", xp: 0, reward: "First spark of light" },
+  { key: "sprout", emoji: "🌿", title: "Young Sprout", xp: 1000, reward: "Luna's lullaby unlocked" },
+  { key: "tree", emoji: "🌳", title: "Young Tree", xp: 2000, reward: "First Leaf badge" },
+  { key: "bloom", emoji: "🌸", title: "Blooming", xp: 3500, reward: "Petal soundscape" },
+  { key: "ancient", emoji: "🌟", title: "Ancient", xp: 6000, reward: "Mythic Luna form" },
 ];
 
 type Collectible = { emoji: string; name: string; owned: boolean };
@@ -58,15 +56,24 @@ const collectibles: Collectible[] = [
 ];
 
 const currentXP = 1250;
-const nextStage = stages.find((s) => !s.reached)!;
-const prevStage = [...stages].reverse().find((s) => s.reached)!;
-const xpProgress = Math.min(1, (currentXP - prevStage.xp) / (nextStage.xp - prevStage.xp));
+// Derive current stage from XP — the highest stage whose xp threshold is reached.
+const currentStageIndex = stages.reduce(
+  (acc, s, i) => (currentXP >= s.xp ? i : acc),
+  0,
+);
+const currentStage = stages[currentStageIndex];
+const nextStage = stages[currentStageIndex + 1] ?? stages[stages.length - 1];
+const prevStage = currentStage;
+const xpProgress = nextStage === currentStage
+  ? 1
+  : Math.min(1, (currentXP - prevStage.xp) / (nextStage.xp - prevStage.xp));
 
 type Burst = { id: number; x: number; y: number; xp: number };
 
 function Garden() {
   const [hour, setHour] = useState<number | null>(null);
   const [bursts, setBursts] = useState<Burst[]>([]);
+  const [previewStage, setPreviewStage] = useState<TreeStageKey>(currentStage.key);
 
   useEffect(() => setHour(new Date().getHours()), []);
 
@@ -101,14 +108,14 @@ function Garden() {
       <section className="px-5">
         <div className="relative overflow-hidden rounded-3xl glass-strong glow-purple">
           <div className="relative h-72 w-full">
-            <img
-              src={tree}
-              alt="Your tree"
-              width={1024}
-              height={768}
-              className="absolute inset-0 h-full w-full object-cover animate-sway"
-            />
-            {/* Time-of-day tint */}
+            {/* Dynamic SVG tree morphs by stage */}
+            <div className="absolute inset-0 flex items-end justify-center animate-sway">
+              <LivingTree
+                stage={previewStage}
+                progress={previewStage === currentStage.key ? xpProgress : 1}
+                className="h-full w-full"
+              />
+            </div>
             <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${timeOfDay.tint}`} />
             {/* Sun/moon halo */}
             <div className="pointer-events-none absolute right-5 top-4 flex items-center gap-1.5 rounded-full glass px-2.5 py-1 text-[10px] uppercase tracking-wider">
@@ -236,37 +243,44 @@ function Garden() {
           <div className="relative">
             <span className="absolute left-[27px] top-2 bottom-2 w-px bg-gradient-to-b from-primary/60 via-white/10 to-white/5" />
             <ul className="space-y-3">
-              {stages.map((s) => {
-                const isCurrent = s.current;
+              {stages.map((s, i) => {
+                const reached = i <= currentStageIndex;
+                const isCurrent = i === currentStageIndex;
+                const isPreview = s.key === previewStage;
                 return (
                   <li key={s.key} className="relative flex items-center gap-3">
-                    <div
-                      className={`relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-xl ${
-                        s.reached ? "gradient-primary" : "bg-white/5"
-                      } ${isCurrent ? "glow-purple animate-pulse-glow" : ""}`}
+                    <button
+                      type="button"
+                      onClick={() => setPreviewStage(s.key)}
+                      className={`relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-xl transition-transform active:scale-95 ${
+                        reached ? "gradient-primary" : "bg-white/5"
+                      } ${isCurrent ? "glow-purple animate-pulse-glow" : ""} ${
+                        isPreview && !isCurrent ? "ring-2 ring-secondary/70" : ""
+                      }`}
+                      aria-label={`Preview ${s.title}`}
                     >
                       <span>{s.emoji}</span>
-                      {s.reached && !isCurrent && (
+                      {reached && !isCurrent && (
                         <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-background">
                           <Check className="h-2.5 w-2.5" strokeWidth={3} />
                         </span>
                       )}
-                      {!s.reached && (
+                      {!reached && (
                         <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-surface text-muted-foreground border border-white/10">
                           <Lock className="h-2.5 w-2.5" />
                         </span>
                       )}
-                    </div>
+                    </button>
                     <div className={`flex-1 rounded-2xl px-3 py-2 ${isCurrent ? "glass" : ""}`}>
                       <div className="flex items-center justify-between">
-                        <p className={`text-sm font-semibold ${s.reached ? "text-foreground" : "text-muted-foreground"}`}>
+                        <p className={`text-sm font-semibold ${reached ? "text-foreground" : "text-muted-foreground"}`}>
                           {s.title}
                         </p>
                         <span className="text-[10px] text-muted-foreground">{s.xp.toLocaleString()} XP</span>
                       </div>
                       <p className="text-[11px] text-muted-foreground">{s.reward}</p>
                       {isCurrent && (
-                        <p className="mt-1 text-[10px] uppercase tracking-wider text-secondary">You are here</p>
+                        <p className="mt-1 text-[10px] uppercase tracking-wider text-secondary">You are here · tap any stage to preview</p>
                       )}
                     </div>
                   </li>
