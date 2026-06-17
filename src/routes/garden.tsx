@@ -73,6 +73,7 @@ type Burst = { id: number; x: number; y: number; xp: number };
 function Garden() {
   const [hour, setHour] = useState<number | null>(null);
   const [bursts, setBursts] = useState<Burst[]>([]);
+  const [previewStage, setPreviewStage] = useState<TreeStageKey>(currentStage.key);
 
   useEffect(() => setHour(new Date().getHours()), []);
 
