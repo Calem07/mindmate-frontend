@@ -15,7 +15,7 @@ import {
   Moon,
   Cloud,
 } from "lucide-react";
-import tree from "@/assets/tree.jpg";
+import { LivingTree, type TreeStageKey } from "@/components/LivingTree";
 
 import { Shell, ScreenHeader } from "@/components/Shell";
 
