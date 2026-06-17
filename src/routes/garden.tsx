@@ -30,21 +30,19 @@ export const Route = createFileRoute("/garden")({
 });
 
 type Stage = {
-  key: string;
+  key: TreeStageKey;
   emoji: string;
   title: string;
   xp: number;
   reward: string;
-  reached: boolean;
-  current?: boolean;
 };
 
 const stages: Stage[] = [
-  { key: "seed", emoji: "🌱", title: "Seed", xp: 0, reward: "First spark of light", reached: true },
-  { key: "sprout", emoji: "🌿", title: "Young Sprout", xp: 1000, reward: "Luna's lullaby unlocked", reached: true, current: true },
-  { key: "tree", emoji: "🌳", title: "Young Tree", xp: 2000, reward: "First Leaf badge", reached: false },
-  { key: "bloom", emoji: "🌸", title: "Blooming", xp: 3500, reward: "Petal soundscape", reached: false },
-  { key: "ancient", emoji: "🌟", title: "Ancient", xp: 6000, reward: "Mythic Luna form", reached: false },
+  { key: "seed", emoji: "🌱", title: "Seed", xp: 0, reward: "First spark of light" },
+  { key: "sprout", emoji: "🌿", title: "Young Sprout", xp: 1000, reward: "Luna's lullaby unlocked" },
+  { key: "tree", emoji: "🌳", title: "Young Tree", xp: 2000, reward: "First Leaf badge" },
+  { key: "bloom", emoji: "🌸", title: "Blooming", xp: 3500, reward: "Petal soundscape" },
+  { key: "ancient", emoji: "🌟", title: "Ancient", xp: 6000, reward: "Mythic Luna form" },
 ];
 
 type Collectible = { emoji: string; name: string; owned: boolean };
@@ -58,9 +56,17 @@ const collectibles: Collectible[] = [
 ];
 
 const currentXP = 1250;
-const nextStage = stages.find((s) => !s.reached)!;
-const prevStage = [...stages].reverse().find((s) => s.reached)!;
-const xpProgress = Math.min(1, (currentXP - prevStage.xp) / (nextStage.xp - prevStage.xp));
+// Derive current stage from XP — the highest stage whose xp threshold is reached.
+const currentStageIndex = stages.reduce(
+  (acc, s, i) => (currentXP >= s.xp ? i : acc),
+  0,
+);
+const currentStage = stages[currentStageIndex];
+const nextStage = stages[currentStageIndex + 1] ?? stages[stages.length - 1];
+const prevStage = currentStage;
+const xpProgress = nextStage === currentStage
+  ? 1
+  : Math.min(1, (currentXP - prevStage.xp) / (nextStage.xp - prevStage.xp));
 
 type Burst = { id: number; x: number; y: number; xp: number };
 
