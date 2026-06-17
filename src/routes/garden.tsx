@@ -108,14 +108,14 @@ function Garden() {
       <section className="px-5">
         <div className="relative overflow-hidden rounded-3xl glass-strong glow-purple">
           <div className="relative h-72 w-full">
-            <img
-              src={tree}
-              alt="Your tree"
-              width={1024}
-              height={768}
-              className="absolute inset-0 h-full w-full object-cover animate-sway"
-            />
-            {/* Time-of-day tint */}
+            {/* Dynamic SVG tree morphs by stage */}
+            <div className="absolute inset-0 flex items-end justify-center animate-sway">
+              <LivingTree
+                stage={previewStage}
+                progress={previewStage === currentStage.key ? xpProgress : 1}
+                className="h-full w-full"
+              />
+            </div>
             <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${timeOfDay.tint}`} />
             {/* Sun/moon halo */}
             <div className="pointer-events-none absolute right-5 top-4 flex items-center gap-1.5 rounded-full glass px-2.5 py-1 text-[10px] uppercase tracking-wider">
