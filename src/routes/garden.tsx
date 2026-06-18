@@ -14,8 +14,18 @@ import {
   Sun,
   Moon,
   Cloud,
+  MessageCircle,
 } from "lucide-react";
 import { LivingTree, type TreeStageKey } from "@/components/LivingTree";
+import {
+  user,
+  luna,
+  gardenStages,
+  careActions,
+  growthTimeline,
+  type GardenStageKey,
+  type CareAction,
+} from "@/data/mock";
 
 import { Shell, ScreenHeader } from "@/components/Shell";
 
@@ -29,22 +39,6 @@ export const Route = createFileRoute("/garden")({
   component: Garden,
 });
 
-type Stage = {
-  key: TreeStageKey;
-  emoji: string;
-  title: string;
-  xp: number;
-  reward: string;
-};
-
-const stages: Stage[] = [
-  { key: "seed", emoji: "🌱", title: "Seed", xp: 0, reward: "First spark of light" },
-  { key: "sprout", emoji: "🌿", title: "Young Sprout", xp: 1000, reward: "Luna's lullaby unlocked" },
-  { key: "tree", emoji: "🌳", title: "Young Tree", xp: 2000, reward: "First Leaf badge" },
-  { key: "bloom", emoji: "🌸", title: "Blooming", xp: 3500, reward: "Petal soundscape" },
-  { key: "ancient", emoji: "🌟", title: "Ancient", xp: 6000, reward: "Mythic Luna form" },
-];
-
 type Collectible = { emoji: string; name: string; owned: boolean };
 const collectibles: Collectible[] = [
   { emoji: "🌱", name: "Seed of Calm", owned: true },
@@ -55,25 +49,34 @@ const collectibles: Collectible[] = [
   { emoji: "✨", name: "Stardust", owned: false },
 ];
 
-const currentXP = 1250;
-// Derive current stage from XP — the highest stage whose xp threshold is reached.
-const currentStageIndex = stages.reduce(
-  (acc, s, i) => (currentXP >= s.xp ? i : acc),
-  0,
-);
-const currentStage = stages[currentStageIndex];
-const nextStage = stages[currentStageIndex + 1] ?? stages[stages.length - 1];
-const prevStage = currentStage;
-const xpProgress = nextStage === currentStage
-  ? 1
-  : Math.min(1, (currentXP - prevStage.xp) / (nextStage.xp - prevStage.xp));
+const ICON_MAP = {
+  ClipboardCheck, Droplet, BookOpen, Heart, Target,
+} as const;
 
-type Burst = { id: number; x: number; y: number; xp: number };
+/** Derive the active stage from any XP value via configured thresholds. */
+function deriveStage(xp: number) {
+  const idx = gardenStages.reduce(
+    (acc, s, i) => (xp >= s.xp ? i : acc),
+    0,
+  );
+  const stage = gardenStages[idx];
+  const next = gardenStages[idx + 1] ?? stage;
+  const prev = stage;
+  const progress =
+    next === stage ? 1 : Math.min(1, (xp - prev.xp) / (next.xp - prev.xp));
+  return { idx, stage, next, progress };
+}
+
+type Burst = { id: number; x: number; y: number; xp: number; label: string };
 
 function Garden() {
   const [hour, setHour] = useState<number | null>(null);
   const [bursts, setBursts] = useState<Burst[]>([]);
-  const [previewStage, setPreviewStage] = useState<TreeStageKey>(currentStage.key);
+
+  const { idx: currentStageIndex, stage: currentStage, next: nextStage, progress: xpProgress } =
+    useMemo(() => deriveStage(user.xp), []);
+
+  const [previewStage, setPreviewStage] = useState<GardenStageKey>(currentStage.key);
 
   useEffect(() => setHour(new Date().getHours()), []);
 
@@ -85,11 +88,15 @@ function Garden() {
     return { label: "Dusk", Icon: Cloud, tint: "from-rose-400/15 via-transparent to-primary/25" };
   }, [hour]);
 
-  const triggerCare = (e: React.MouseEvent<HTMLButtonElement>, xp: number) => {
+  const triggerCare = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    xp: number,
+    label: string,
+  ) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const id = Date.now() + Math.random();
-    setBursts((b) => [...b, { id, x: rect.left + rect.width / 2, y: rect.top, xp }]);
-    setTimeout(() => setBursts((b) => b.filter((x) => x.id !== id)), 1200);
+    setBursts((b) => [...b, { id, x: rect.left + rect.width / 2, y: rect.top, xp, label }]);
+    setTimeout(() => setBursts((b) => b.filter((x) => x.id !== id)), 1300);
   };
 
   return (
@@ -108,23 +115,19 @@ function Garden() {
       <section className="px-5">
         <div className="relative overflow-hidden rounded-3xl glass-strong glow-purple">
           <div className="relative h-72 w-full">
-            {/* Dynamic SVG tree morphs by stage */}
             <div className="absolute inset-0 flex items-end justify-center animate-sway">
               <LivingTree
-                stage={previewStage}
+                stage={previewStage as TreeStageKey}
                 progress={previewStage === currentStage.key ? xpProgress : 1}
                 className="h-full w-full"
               />
             </div>
             <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${timeOfDay.tint}`} />
-            {/* Sun/moon halo */}
             <div className="pointer-events-none absolute right-5 top-4 flex items-center gap-1.5 rounded-full glass px-2.5 py-1 text-[10px] uppercase tracking-wider">
               <timeOfDay.Icon className="h-3 w-3 text-secondary" />
               <span className="text-muted-foreground">{timeOfDay.label}</span>
             </div>
-            {/* Bottom fade into surface */}
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
-            {/* Fireflies — drifting particles */}
             <div className="pointer-events-none absolute inset-0">
               {[...Array(14)].map((_, i) => {
                 const left = (i * 53) % 100;
@@ -148,13 +151,13 @@ function Garden() {
                 );
               })}
             </div>
-            {/* Soft pulse halo behind tree */}
             <div className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-3xl animate-pulse-glow" />
           </div>
-          {/* Bottom label inside scene */}
-          <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-secondary" />
-            <p className="text-xs text-muted-foreground">Your tree is breathing softly</p>
+          <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-2 px-4">
+            <Sparkles className="h-3.5 w-3.5 text-secondary shrink-0" />
+            <p className="text-xs text-muted-foreground text-center italic line-clamp-1">
+              "{gardenStages.find((s) => s.key === previewStage)?.lunaWhisper}"
+            </p>
           </div>
         </div>
       </section>
@@ -164,14 +167,14 @@ function Garden() {
         <div className="glass-strong rounded-3xl p-5">
           <div className="flex items-center justify-between">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Level 4 · {prevStage.title}
+              Level {user.level} · {currentStage.title}
             </p>
             <span className="text-[10px] text-muted-foreground">
-              {nextStage.xp - currentXP} XP to {nextStage.title}
+              {(nextStage.xp - user.xp).toLocaleString()} XP to {nextStage.title}
             </span>
           </div>
           <p className="mt-1 text-2xl font-bold">
-            <span className="text-gradient">{currentXP.toLocaleString()}</span>
+            <span className="text-gradient">{user.xp.toLocaleString()}</span>
             <span className="text-muted-foreground"> / {nextStage.xp.toLocaleString()} XP</span>
           </p>
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
@@ -187,7 +190,6 @@ function Garden() {
           <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-primary/30 blur-3xl animate-pulse-glow" />
           <div className="relative flex items-center gap-4">
             <div className="relative flex h-20 w-20 items-center justify-center">
-              {/* XP ring */}
               <svg viewBox="0 0 36 36" className="absolute inset-0 h-full w-full -rotate-90">
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="oklch(1 0 0 / 0.08)" strokeWidth="2.5" />
                 <circle
@@ -199,6 +201,7 @@ function Garden() {
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeDasharray={`${xpProgress * 100} 100`}
+                  style={{ transition: "stroke-dasharray 900ms ease" }}
                 />
                 <defs>
                   <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
@@ -237,13 +240,13 @@ function Garden() {
       <section className="px-5 pt-6">
         <div className="mb-3 flex items-end justify-between">
           <h3 className="text-base font-semibold">Evolution Journey</h3>
-          <span className="text-[10px] text-muted-foreground">5 stages</span>
+          <span className="text-[10px] text-muted-foreground">{gardenStages.length} stages</span>
         </div>
         <div className="glass-strong rounded-3xl p-4">
           <div className="relative">
             <span className="absolute left-[27px] top-2 bottom-2 w-px bg-gradient-to-b from-primary/60 via-white/10 to-white/5" />
             <ul className="space-y-3">
-              {stages.map((s, i) => {
+              {gardenStages.map((s, i) => {
                 const reached = i <= currentStageIndex;
                 const isCurrent = i === currentStageIndex;
                 const isPreview = s.key === previewStage;
@@ -291,21 +294,79 @@ function Garden() {
         </div>
       </section>
 
-      {/* Garden Care */}
+      {/* Growth Timeline — when the tree advanced + Luna whispers */}
       <section className="px-5 pt-6">
-        <h3 className="text-base font-semibold">Garden Care</h3>
-        <p className="text-xs text-muted-foreground">A tiny act helps your tree breathe deeper</p>
+        <div className="mb-3 flex items-end justify-between">
+          <h3 className="text-base font-semibold">Growth Timeline</h3>
+          <span className="text-[10px] text-muted-foreground">{growthTimeline.length} milestones</span>
+        </div>
+        <div className="glass-strong rounded-3xl p-4">
+          <ol className="relative space-y-4 pl-5">
+            <span className="absolute left-1.5 top-1 bottom-1 w-px bg-gradient-to-b from-secondary/70 via-primary/40 to-white/5" />
+            {growthTimeline.map((m) => {
+              const s = gardenStages.find((g) => g.key === m.stage)!;
+              return (
+                <li key={m.id} className="relative">
+                  <span className="absolute -left-[18px] top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-secondary ring-4 ring-secondary/20" />
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">
+                      <span className="mr-1.5">{s.emoji}</span>
+                      Reached {s.title}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground">{m.daysAgo}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">{m.date}</p>
+                  <div className="mt-2 flex gap-2 rounded-2xl glass p-2.5">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full gradient-primary">
+                      <MessageCircle className="h-3.5 w-3.5 text-background" />
+                    </div>
+                    <p className="text-[12px] italic text-foreground/90">
+                      <span className="text-secondary not-italic">{luna.name}:</span> "{m.lunaMessage}"
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+            {/* Upcoming */}
+            {gardenStages.slice(currentStageIndex + 1).map((s) => (
+              <li key={`up-${s.key}`} className="relative opacity-60">
+                <span className="absolute -left-[18px] top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-white/10 ring-4 ring-white/5" />
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    <span className="mr-1.5">{s.emoji}</span>
+                    {s.title} · coming
+                  </p>
+                  <span className="text-[10px] text-muted-foreground">{s.xp.toLocaleString()} XP</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground/80 italic">"{s.lunaWhisper}"</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* Garden Care — stage-aware effects + XP */}
+      <section className="px-5 pt-6">
+        <div className="flex items-end justify-between">
+          <div>
+            <h3 className="text-base font-semibold">Garden Care</h3>
+            <p className="text-xs text-muted-foreground">Effects tuned for your {currentStage.title}</p>
+          </div>
+          <span className="text-[10px] uppercase tracking-wider text-secondary">{currentStage.emoji} {currentStage.title}</span>
+        </div>
         <div className="mt-3 grid grid-cols-5 gap-2">
-          {[
-            { icon: ClipboardCheck, label: "Check-In", to: "/check-in" as const, xp: 25 },
-            { icon: Droplet, label: "Habits", to: "/habits" as const, xp: 15 },
-            { icon: BookOpen, label: "Journal", to: "/journal" as const, xp: 20 },
-            { icon: Heart, label: "Gratitude", to: "/journal" as const, xp: 10 },
-            { icon: Target, label: "Focus", to: "/exam-focus" as const, xp: 30 },
-          ].map(({ icon: Icon, label, to, xp }) => (
-            <CareTile key={label} to={to} label={label} xp={xp} Icon={Icon} onTap={triggerCare} />
+          {careActions.map((a) => (
+            <CareTile
+              key={a.id}
+              action={a}
+              stage={currentStage.key}
+              onTap={triggerCare}
+            />
           ))}
         </div>
+        <p className="mt-2 text-[10px] text-muted-foreground text-center">
+          Tap a care to see its effect on the {currentStage.title} form
+        </p>
       </section>
 
       {/* Collectibles shelf */}
@@ -345,13 +406,18 @@ function Garden() {
       {/* Floating +XP bursts */}
       <div className="pointer-events-none fixed inset-0 z-50">
         {bursts.map((b) => (
-          <span
+          <div
             key={b.id}
-            className="absolute -translate-x-1/2 animate-rise rounded-full gradient-primary px-2.5 py-1 text-[11px] font-bold text-background shadow-lg"
+            className="absolute -translate-x-1/2 animate-rise"
             style={{ left: b.x, top: b.y }}
           >
-            +{b.xp} XP
-          </span>
+            <span className="block rounded-full gradient-primary px-2.5 py-1 text-[11px] font-bold text-background shadow-lg">
+              +{b.xp} XP
+            </span>
+            <span className="mt-1 block rounded-full glass px-2 py-0.5 text-center text-[9px] text-foreground/90">
+              {b.label}
+            </span>
+          </div>
         ))}
       </div>
     </Shell>
@@ -359,32 +425,32 @@ function Garden() {
 }
 
 function CareTile({
-  to,
-  label,
-  xp,
-  Icon,
+  action,
+  stage,
   onTap,
 }: {
-  to: "/check-in" | "/habits" | "/journal" | "/exam-focus";
-  label: string;
-  xp: number;
-  Icon: React.ComponentType<{ className?: string }>;
-  onTap: (e: React.MouseEvent<HTMLButtonElement>, xp: number) => void;
+  action: CareAction;
+  stage: GardenStageKey;
+  onTap: (e: React.MouseEvent<HTMLButtonElement>, xp: number, label: string) => void;
 }) {
   const [ripples, setRipples] = useState<number[]>([]);
+  const Icon = ICON_MAP[action.icon];
+  const xp = action.xpByStage[stage];
+  const effect = action.effectByStage[stage];
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const id = Date.now();
     setRipples((r) => [...r, id]);
     setTimeout(() => setRipples((r) => r.filter((x) => x !== id)), 700);
-    onTap(e, xp);
+    onTap(e, xp, effect);
   };
 
   return (
-    <Link to={to} className="block">
+    <Link to={action.to} className="block">
       <button
         type="button"
         onClick={handleClick}
+        title={effect}
         className="relative w-full overflow-hidden glass flex flex-col items-center gap-1.5 rounded-2xl p-3 transition-transform active:scale-95"
       >
         {ripples.map((id) => (
@@ -394,7 +460,7 @@ function CareTile({
           />
         ))}
         <Icon className="relative h-5 w-5 text-primary" />
-        <span className="relative text-[10px] font-medium">{label}</span>
+        <span className="relative text-[10px] font-medium">{action.label}</span>
         <span className="relative text-[9px] text-secondary">+{xp}</span>
       </button>
     </Link>
