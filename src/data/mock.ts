@@ -146,3 +146,101 @@ export const settings = {
   privacy: { biometric: true, analytics: false, shareProgress: false },
   appearance: { theme: "dark" as "dark" | "light", reduceMotion: false },
 };
+
+// =======================
+// Growth Garden config
+// =======================
+// Stage thresholds map directly to evaluation metrics (XP). Edit here to
+// re-balance the journey; UI derives stage + progress automatically.
+export type GardenStageKey = "seed" | "sprout" | "tree" | "bloom" | "ancient";
+
+export type GardenStage = {
+  key: GardenStageKey;
+  emoji: string;
+  title: string;
+  /** XP at which this stage begins. Must be ascending. */
+  xp: number;
+  reward: string;
+  lunaWhisper: string;
+};
+
+export const gardenStages: GardenStage[] = [
+  { key: "seed",    emoji: "🌱", title: "Seed",         xp: 0,    reward: "First spark of light",   lunaWhisper: "A tiny seed is enough. We start here, together." },
+  { key: "sprout",  emoji: "🌿", title: "Young Sprout", xp: 1000, reward: "Luna's lullaby unlocked", lunaWhisper: "Look — your first leaves. I'm so proud of you." },
+  { key: "tree",    emoji: "🌳", title: "Young Tree",   xp: 2000, reward: "First Leaf badge",       lunaWhisper: "You're standing tall now. Your roots run deeper." },
+  { key: "bloom",   emoji: "🌸", title: "Blooming",     xp: 3500, reward: "Petal soundscape",       lunaWhisper: "Every petal is a small kindness you gave yourself." },
+  { key: "ancient", emoji: "🌟", title: "Ancient",      xp: 6000, reward: "Mythic Luna form",       lunaWhisper: "Mythic, quiet, enduring. You became your own safe place." },
+];
+
+// Stage-specific care actions. XP scales with the current form so early
+// stages reward consistency, later stages reward depth.
+export type CareAction = {
+  id: string;
+  icon: "ClipboardCheck" | "Droplet" | "BookOpen" | "Heart" | "Target";
+  label: string;
+  to: "/check-in" | "/habits" | "/journal" | "/exam-focus";
+  /** Per-stage XP reward. */
+  xpByStage: Record<GardenStageKey, number>;
+  /** Per-stage micro-effect description. */
+  effectByStage: Record<GardenStageKey, string>;
+};
+
+export const careActions: CareAction[] = [
+  {
+    id: "checkin", icon: "ClipboardCheck", label: "Check-In", to: "/check-in",
+    xpByStage: { seed: 30, sprout: 25, tree: 25, bloom: 20, ancient: 18 },
+    effectByStage: {
+      seed: "Wakes the seed", sprout: "Unfurls a new leaf", tree: "Strengthens the trunk",
+      bloom: "Opens a fresh blossom", ancient: "Releases golden pollen",
+    },
+  },
+  {
+    id: "water", icon: "Droplet", label: "Habits", to: "/habits",
+    xpByStage: { seed: 20, sprout: 18, tree: 15, bloom: 14, ancient: 12 },
+    effectByStage: {
+      seed: "Soaks the soil", sprout: "Feeds tender roots", tree: "Deepens the roots",
+      bloom: "Brightens the petals", ancient: "Glows along the bark",
+    },
+  },
+  {
+    id: "journal", icon: "BookOpen", label: "Journal", to: "/journal",
+    xpByStage: { seed: 25, sprout: 22, tree: 20, bloom: 22, ancient: 24 },
+    effectByStage: {
+      seed: "Whispers to the seed", sprout: "Sways the sprout", tree: "Carves a ring in the trunk",
+      bloom: "Scatters petals", ancient: "Etches a rune in the bark",
+    },
+  },
+  {
+    id: "gratitude", icon: "Heart", label: "Gratitude", to: "/journal",
+    xpByStage: { seed: 15, sprout: 14, tree: 12, bloom: 16, ancient: 18 },
+    effectByStage: {
+      seed: "Warms the shell", sprout: "Tints leaves gold", tree: "Releases a soft hum",
+      bloom: "Doubles the blossoms", ancient: "Summons fireflies",
+    },
+  },
+  {
+    id: "focus", icon: "Target", label: "Focus", to: "/exam-focus",
+    xpByStage: { seed: 35, sprout: 32, tree: 30, bloom: 28, ancient: 26 },
+    effectByStage: {
+      seed: "Sharpens the sprout", sprout: "Grows a sturdy stem", tree: "Adds a new branch",
+      bloom: "Sweetens the nectar", ancient: "Lights an ancient glyph",
+    },
+  },
+];
+
+// Growth Timeline — when the tree advanced stages, with a Luna message.
+export type GrowthMilestone = {
+  id: string;
+  stage: GardenStageKey;
+  date: string;
+  daysAgo: string;
+  lunaMessage: string;
+};
+
+export const growthTimeline: GrowthMilestone[] = [
+  { id: "m1", stage: "seed",   date: "Apr 12, 2025", daysAgo: "Day 1",   lunaMessage: "We planted you today. I'll stay close." },
+  { id: "m2", stage: "sprout", date: "May 03, 2025", daysAgo: "21 days in", lunaMessage: "Your first leaves found the light. I noticed." },
+  { id: "m3", stage: "tree",   date: "Jul 18, 2025", daysAgo: "97 days in", lunaMessage: "A small trunk. A steady you. We made it here." },
+  // Bloom & Ancient still ahead.
+];
+
