@@ -205,11 +205,11 @@ function LunaScreen() {
       });
 
       setMessages((m) =>
-        m.map((x) => (x.id === localId ? { ...x, status: "sent" } : x)).concat({
-          id: res.id, from: "luna",
+        m.map((x) => (x.id === localId ? { ...x, status: "sent" as const } : x)).concat({
+          id: res.id, from: "luna" as const,
           text: res.text, time: fmtTime(new Date(res.createdAt)),
           createdAt: new Date(res.createdAt),
-          mood: res.mood as LunaMood, status: "sent",
+          mood: res.mood as LunaMood, status: "sent" as const,
         }),
       );
     } catch (e) {
