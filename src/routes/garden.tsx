@@ -14,7 +14,6 @@ import {
   Sun,
   Moon,
   Cloud,
-  MessageCircle,
 } from "lucide-react";
 import { LivingTree, type TreeStageKey } from "@/components/LivingTree";
 import { LunaAvatar, type LunaMood } from "@/components/LunaAvatar";
