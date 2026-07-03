@@ -14,9 +14,9 @@ import {
   Sun,
   Moon,
   Cloud,
-  MessageCircle,
 } from "lucide-react";
 import { LivingTree, type TreeStageKey } from "@/components/LivingTree";
+import { LunaAvatar, type LunaMood } from "@/components/LunaAvatar";
 import {
   user,
   luna,
@@ -52,6 +52,14 @@ const collectibles: Collectible[] = [
 const ICON_MAP = {
   ClipboardCheck, Droplet, BookOpen, Heart, Target,
 } as const;
+
+const STAGE_MOOD: Record<GardenStageKey, LunaMood> = {
+  seed: "sleepy",
+  sprout: "happy",
+  tree: "focused",
+  bloom: "celebrate",
+  ancient: "calm",
+};
 
 /** Derive the active stage from any XP value via configured thresholds. */
 function deriveStage(xp: number) {
@@ -317,9 +325,7 @@ function Garden() {
                   </div>
                   <p className="text-[11px] text-muted-foreground">{m.date}</p>
                   <div className="mt-2 flex gap-2 rounded-2xl glass p-2.5">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full gradient-primary">
-                      <MessageCircle className="h-3.5 w-3.5 text-background" />
-                    </div>
+                    <LunaAvatar mood={STAGE_MOOD[m.stage]} size="sm" />
                     <p className="text-[12px] italic text-foreground/90">
                       <span className="text-secondary not-italic">{luna.name}:</span> "{m.lunaMessage}"
                     </p>

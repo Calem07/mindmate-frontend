@@ -157,6 +157,67 @@ function LunaScreen() {
     [historyLoaded, messages],
   );
 
+  // Proactive nudges — computed locally, never persisted, dismissible for the session.
+  const [dismissedNudges, setDismissedNudges] = useState<Set<string>>(new Set());
+  const nudges = useMemo(() => {
+    const items: { id: string; icon: typeof ClipboardCheck; title: string; body: string; prompt: string; cta: string; to?: string }[] = [];
+    const today = new Date();
+    const checkInDate = new Date(lastCheckIn.date);
+    const daysSinceCheckIn = Math.floor((today.getTime() - checkInDate.getTime()) / 86400000);
+    const isSameDay = daysSinceCheckIn === 0;
+
+    if (!isSameDay) {
+      items.push({
+        id: "checkin-today",
+        icon: ClipboardCheck,
+        title: daysSinceCheckIn === 1 ? "I missed you yesterday" : `It's been ${daysSinceCheckIn} days`,
+        body: "A tiny check-in is enough. I'll be right here.",
+        prompt: "I haven't checked in yet today. Can we ease into it together?",
+        cta: "Open check-in",
+        to: "/check-in",
+      });
+    }
+    if (userMock.streakDays >= 3) {
+      const hour = today.getHours();
+      if (hour >= 18 && !isSameDay) {
+        items.push({
+          id: "streak-risk",
+          icon: Sparkles,
+          title: `Your ${userMock.streakDays}-day streak is waiting`,
+          body: "One soft moment tonight keeps it alive. No pressure — I'm proud either way.",
+          prompt: `My ${userMock.streakDays}-day streak is at risk tonight. Help me protect it in the smallest way possible.`,
+          cta: "Protect my streak",
+          to: "/check-in",
+        });
+      } else if (isSameDay) {
+        items.push({
+          id: "streak-celebrate",
+          icon: Sparkles,
+          title: `${userMock.streakDays} days in a row 💜`,
+          body: "I've noticed. That's real.",
+          prompt: `Celebrate my ${userMock.streakDays}-day streak with me in one gentle sentence.`,
+          cta: "Say something soft",
+        });
+      }
+    }
+    const skipped = habits.filter((h) => h.status === "not_started");
+    if (skipped.length > 0 && new Date().getHours() >= 15) {
+      items.push({
+        id: `skipped-${skipped[0].id}`,
+        icon: Droplet,
+        title: `${skipped[0].name} hasn't started`,
+        body: "Want a tiny version of it? Even 30 seconds counts.",
+        prompt: `I haven't started "${skipped[0].name}" today. Give me a 30-second version I can do right now.`,
+        cta: "Tend habits",
+        to: "/habits",
+      });
+    }
+    return items.filter((n) => !dismissedNudges.has(n.id));
+  }, [dismissedNudges]);
+
+  const dismissNudge = (id: string) =>
+    setDismissedNudges((s) => new Set(s).add(id));
+
   // Header mood = last luna message mood, else ambient
   const headerMood: LunaMood = useMemo(() => {
     const lastLuna = [...messages].reverse().find((m) => m.from === "luna");
@@ -321,6 +382,54 @@ function LunaScreen() {
           <div className="flex items-center justify-center gap-2 py-8 text-xs text-muted-foreground">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple" />
             Luna is remembering…
+          </div>
+        )}
+
+        {historyLoaded && nudges.length > 0 && (
+          <div className="space-y-2 animate-[rise_0.5s_ease-out]">
+            {nudges.map((n) => {
+              const Icon = n.icon;
+              return (
+                <div key={n.id} className="glass-strong relative overflow-hidden rounded-3xl p-3 pl-4 ring-1 ring-purple/20">
+                  <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-purple via-primary to-cyan" />
+                  <div className="flex items-start gap-3">
+                    <LunaAvatar mood="caring" size="sm" bounce />
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-purple">
+                        <Icon className="h-3 w-3" />
+                        Luna nudge
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold leading-tight">{n.title}</p>
+                      <p className="mt-0.5 text-xs italic text-muted-foreground">"{n.body}"</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <button
+                          onClick={() => { dismissNudge(n.id); void sendPrompt(n.prompt); }}
+                          className="rounded-full gradient-primary px-3 py-1 text-[11px] font-semibold text-white"
+                        >
+                          Talk about it
+                        </button>
+                        {n.to && (
+                          <Link
+                            to={n.to}
+                            onClick={() => dismissNudge(n.id)}
+                            className="glass rounded-full px-3 py-1 text-[11px] font-semibold text-purple"
+                          >
+                            {n.cta}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => dismissNudge(n.id)}
+                      className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-white/5"
+                      aria-label="Dismiss"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 

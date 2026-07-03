@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bell, ChevronRight, Droplet, Brain, MessageCircle, Sparkles, BookOpen, Moon, Sun, Sunrise, Leaf, Lock } from "lucide-react";
-import luna from "@/assets/luna.png";
 import tree from "@/assets/tree.jpg";
 import { Shell } from "@/components/Shell";
+import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,6 +29,7 @@ function Home() {
   useEffect(() => setHour(new Date().getHours()), []);
   const ctx = hour === null ? { greeting: "Hello,", icon: Moon, whisper: "Luna is here with you." } : computeTimeContext(hour);
   const { greeting, icon: TimeIcon, whisper } = ctx;
+  const ambientMood = useAmbientLunaMood();
   return (
     <Shell>
       <header className="flex items-start justify-between px-5 pt-6">
@@ -60,7 +61,7 @@ function Home() {
           <div className="relative flex items-start gap-4">
             <div className="relative">
               <div className="absolute inset-0 animate-pulse-glow rounded-full bg-purple/40 blur-xl" />
-              <img src={luna} alt="Luna" width={80} height={80} className="relative h-20 w-20 animate-float object-contain" />
+              <LunaAvatar mood={ambientMood} size="xl" bounce className="relative" />
             </div>
             <div className="flex-1 pt-1">
               <div className="flex items-center gap-2">

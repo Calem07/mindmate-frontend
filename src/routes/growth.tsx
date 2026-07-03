@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { CheckCircle2, BookOpen, Target, Brain, Clock, Trophy, BarChart3, Sparkles, ChevronRight, Heart } from "lucide-react";
-import lunaImg from "@/assets/luna.png";
+import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
 import { reflections } from "@/data/mock";
 
 export const Route = createFileRoute("/growth")({
@@ -27,6 +27,7 @@ const toneMap: Record<string, string> = {
 };
 
 function Growth() {
+  const ambientMood = useAmbientLunaMood();
   return (
     <Shell>
       <ScreenHeader title="Growth" back />
@@ -35,7 +36,7 @@ function Growth() {
         <div className="glass-strong relative overflow-hidden rounded-3xl p-5 glow-purple">
           <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-purple/30 blur-3xl" />
           <div className="relative flex items-center gap-3">
-            <img src={lunaImg} alt="" width={48} height={48} className="h-12 w-12 animate-float object-contain" />
+            <LunaAvatar mood={ambientMood} size="md" bounce />
             <div className="min-w-0">
               <p className="text-xs uppercase tracking-wider text-purple">Your growth hub</p>
               <p className="text-base font-bold leading-tight">Everything Luna helps you tend</p>
