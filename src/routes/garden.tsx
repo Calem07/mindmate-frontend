@@ -54,6 +54,14 @@ const ICON_MAP = {
   ClipboardCheck, Droplet, BookOpen, Heart, Target,
 } as const;
 
+const STAGE_MOOD: Record<GardenStageKey, LunaMood> = {
+  seed: "sleepy",
+  sprout: "happy",
+  tree: "focused",
+  bloom: "celebrate",
+  ancient: "calm",
+};
+
 /** Derive the active stage from any XP value via configured thresholds. */
 function deriveStage(xp: number) {
   const idx = gardenStages.reduce(
