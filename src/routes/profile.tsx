@@ -19,6 +19,7 @@ function Profile() {
   const navigate = useNavigate();
   const name = (user?.user_metadata?.display_name as string | undefined) ?? user?.email?.split("@")[0] ?? "Calem";
   const initial = name.charAt(0).toUpperCase();
+  const ambientMood = useAmbientLunaMood();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
