@@ -157,6 +157,67 @@ function LunaScreen() {
     [historyLoaded, messages],
   );
 
+  // Proactive nudges — computed locally, never persisted, dismissible for the session.
+  const [dismissedNudges, setDismissedNudges] = useState<Set<string>>(new Set());
+  const nudges = useMemo(() => {
+    const items: { id: string; icon: typeof ClipboardCheck; title: string; body: string; prompt: string; cta: string; to?: string }[] = [];
+    const today = new Date();
+    const checkInDate = new Date(lastCheckIn.date);
+    const daysSinceCheckIn = Math.floor((today.getTime() - checkInDate.getTime()) / 86400000);
+    const isSameDay = daysSinceCheckIn === 0;
+
+    if (!isSameDay) {
+      items.push({
+        id: "checkin-today",
+        icon: ClipboardCheck,
+        title: daysSinceCheckIn === 1 ? "I missed you yesterday" : `It's been ${daysSinceCheckIn} days`,
+        body: "A tiny check-in is enough. I'll be right here.",
+        prompt: "I haven't checked in yet today. Can we ease into it together?",
+        cta: "Open check-in",
+        to: "/check-in",
+      });
+    }
+    if (userMock.streakDays >= 3) {
+      const hour = today.getHours();
+      if (hour >= 18 && !isSameDay) {
+        items.push({
+          id: "streak-risk",
+          icon: Sparkles,
+          title: `Your ${userMock.streakDays}-day streak is waiting`,
+          body: "One soft moment tonight keeps it alive. No pressure — I'm proud either way.",
+          prompt: `My ${userMock.streakDays}-day streak is at risk tonight. Help me protect it in the smallest way possible.`,
+          cta: "Protect my streak",
+          to: "/check-in",
+        });
+      } else if (isSameDay) {
+        items.push({
+          id: "streak-celebrate",
+          icon: Sparkles,
+          title: `${userMock.streakDays} days in a row 💜`,
+          body: "I've noticed. That's real.",
+          prompt: `Celebrate my ${userMock.streakDays}-day streak with me in one gentle sentence.`,
+          cta: "Say something soft",
+        });
+      }
+    }
+    const skipped = habits.filter((h) => h.status === "not_started");
+    if (skipped.length > 0 && new Date().getHours() >= 15) {
+      items.push({
+        id: `skipped-${skipped[0].id}`,
+        icon: Droplet,
+        title: `${skipped[0].name} hasn't started`,
+        body: "Want a tiny version of it? Even 30 seconds counts.",
+        prompt: `I haven't started "${skipped[0].name}" today. Give me a 30-second version I can do right now.`,
+        cta: "Tend habits",
+        to: "/habits",
+      });
+    }
+    return items.filter((n) => !dismissedNudges.has(n.id));
+  }, [dismissedNudges]);
+
+  const dismissNudge = (id: string) =>
+    setDismissedNudges((s) => new Set(s).add(id));
+
   // Header mood = last luna message mood, else ambient
   const headerMood: LunaMood = useMemo(() => {
     const lastLuna = [...messages].reverse().find((m) => m.from === "luna");
