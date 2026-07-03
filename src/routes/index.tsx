@@ -61,7 +61,7 @@ function Home() {
           <div className="relative flex items-start gap-4">
             <div className="relative">
               <div className="absolute inset-0 animate-pulse-glow rounded-full bg-purple/40 blur-xl" />
-              <img src={luna} alt="Luna" width={80} height={80} className="relative h-20 w-20 animate-float object-contain" />
+              <LunaAvatar mood={ambientMood} size="xl" bounce className="relative" />
             </div>
             <div className="flex-1 pt-1">
               <div className="flex items-center gap-2">
