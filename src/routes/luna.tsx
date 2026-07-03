@@ -385,6 +385,54 @@ function LunaScreen() {
           </div>
         )}
 
+        {historyLoaded && nudges.length > 0 && (
+          <div className="space-y-2 animate-[rise_0.5s_ease-out]">
+            {nudges.map((n) => {
+              const Icon = n.icon;
+              return (
+                <div key={n.id} className="glass-strong relative overflow-hidden rounded-3xl p-3 pl-4 ring-1 ring-purple/20">
+                  <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-purple via-primary to-cyan" />
+                  <div className="flex items-start gap-3">
+                    <LunaAvatar mood="caring" size="sm" bounce />
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-purple">
+                        <Icon className="h-3 w-3" />
+                        Luna nudge
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold leading-tight">{n.title}</p>
+                      <p className="mt-0.5 text-xs italic text-muted-foreground">"{n.body}"</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <button
+                          onClick={() => { dismissNudge(n.id); void sendPrompt(n.prompt); }}
+                          className="rounded-full gradient-primary px-3 py-1 text-[11px] font-semibold text-white"
+                        >
+                          Talk about it
+                        </button>
+                        {n.to && (
+                          <Link
+                            to={n.to}
+                            onClick={() => dismissNudge(n.id)}
+                            className="glass rounded-full px-3 py-1 text-[11px] font-semibold text-purple"
+                          >
+                            {n.cta}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => dismissNudge(n.id)}
+                      className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-white/5"
+                      aria-label="Dismiss"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {historyLoaded && messages.length === 0 && (
           <EmptyState icon={MessageCircle} title="Your space with Luna is clear" body="Say hi, share what's on your mind, or pick a soft prompt below." />
         )}
