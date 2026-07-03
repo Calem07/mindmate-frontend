@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bell, ChevronRight, Droplet, Brain, MessageCircle, Sparkles, BookOpen, Moon, Sun, Sunrise, Leaf, Lock } from "lucide-react";
-import luna from "@/assets/luna.png";
 import tree from "@/assets/tree.jpg";
 import { Shell } from "@/components/Shell";
+import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
 
 export const Route = createFileRoute("/")({
   head: () => ({
