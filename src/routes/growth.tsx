@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { CheckCircle2, BookOpen, Target, Brain, Clock, Trophy, BarChart3, Sparkles, ChevronRight, Heart } from "lucide-react";
-import lunaImg from "@/assets/luna.png";
+import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
 import { reflections } from "@/data/mock";
 
 export const Route = createFileRoute("/growth")({
