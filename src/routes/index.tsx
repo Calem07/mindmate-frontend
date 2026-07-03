@@ -29,6 +29,7 @@ function Home() {
   useEffect(() => setHour(new Date().getHours()), []);
   const ctx = hour === null ? { greeting: "Hello,", icon: Moon, whisper: "Luna is here with you." } : computeTimeContext(hour);
   const { greeting, icon: TimeIcon, whisper } = ctx;
+  const ambientMood = useAmbientLunaMood();
   return (
     <Shell>
       <header className="flex items-start justify-between px-5 pt-6">
