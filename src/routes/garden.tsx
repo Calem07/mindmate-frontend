@@ -326,9 +326,7 @@ function Garden() {
                   </div>
                   <p className="text-[11px] text-muted-foreground">{m.date}</p>
                   <div className="mt-2 flex gap-2 rounded-2xl glass p-2.5">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full gradient-primary">
-                      <MessageCircle className="h-3.5 w-3.5 text-background" />
-                    </div>
+                    <LunaAvatar mood={STAGE_MOOD[m.stage]} size="sm" />
                     <p className="text-[12px] italic text-foreground/90">
                       <span className="text-secondary not-italic">{luna.name}:</span> "{m.lunaMessage}"
                     </p>
