@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Award, Cog, Bell, Shield, HelpCircle, ChevronRight, BarChart3, LogOut, Sun, Moon } from "lucide-react";
 
-import luna from "@/assets/luna.png";
+import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { useAuth } from "@/components/AuthProvider";
 import { useTheme } from "@/components/ThemeProvider";
