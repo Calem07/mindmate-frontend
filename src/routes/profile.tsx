@@ -49,8 +49,8 @@ function Profile() {
           <div className="flex items-center gap-4">
             <div className="relative h-16 w-16 shrink-0 rounded-full gradient-primary p-0.5">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-card text-xl font-bold text-foreground">{initial}</div>
-              <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-purple/30 p-1">
-                <img src={luna} alt="Luna" width={20} height={20} className="h-full w-full object-contain" />
+              <div className="absolute -bottom-1 -right-1">
+                <LunaAvatar mood={ambientMood} size="xs" />
               </div>
             </div>
             <div className="flex-1">
