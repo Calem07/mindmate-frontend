@@ -109,9 +109,10 @@ export function LunaMoodDot({ mood }: { mood: LunaMood }) {
     focused: "watching quietly",
     celebrate: "celebrating you",
   };
+  const { reducedMotion } = useLunaSystem();
   return (
     <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple" />
+      <span className={`h-1.5 w-1.5 rounded-full bg-purple ${reducedMotion ? "" : "animate-pulse"}`} />
       {label[mood]}
     </span>
   );
