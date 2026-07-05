@@ -45,7 +45,7 @@ function Settings() {
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15"><Sparkles className="h-5 w-5 text-primary" /></div>
               <div className="flex-1"><p className="text-sm font-semibold">Reduce motion</p><p className="text-xs text-muted-foreground">Calmer animations</p></div>
-              <Toggle on={reduceMotion} onChange={setReduceMotion} />
+              <Toggle on={reducedMotion} onChange={setReducedMotion} />
             </div>
           </div>
         </div>
