@@ -176,3 +176,12 @@
 .animate-drift { animation: drift linear infinite; }
 .animate-ripple { animation: ripple 700ms ease-out forwards; }
 .animate-rise { animation: rise 1100ms ease-out forwards; }
+
+/* Reduced motion: user-toggled global calm */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
