@@ -31,6 +31,7 @@ const SIZE_MAP = { xs: 28, sm: 40, md: 56, lg: 80, xl: 120 } as const;
  */
 export function useAmbientLunaMood(): LunaMood {
   const [mood, setMood] = useState<LunaMood>("warm");
+  const { transientMood } = useLunaSystem();
   useEffect(() => {
     const h = new Date().getHours();
     if (h < 6) setMood("sleepy");
@@ -39,7 +40,7 @@ export function useAmbientLunaMood(): LunaMood {
     else if (h < 21) setMood("calm");
     else setMood("caring");
   }, []);
-  return mood;
+  return transientMood ?? mood;
 }
 
 export function LunaAvatar({
