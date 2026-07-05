@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { useTheme } from "@/components/ThemeProvider";
+import { useLunaSystem } from "@/components/LunaSystemProvider";
 import { Bell, Shield, Sparkles, Moon, Sun, ChevronRight, HelpCircle, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
