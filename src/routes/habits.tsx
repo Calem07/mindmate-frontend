@@ -16,9 +16,18 @@ function Habits() {
   const [list, setList] = useState(initialHabits);
   const [showAdd, setShowAdd] = useState(false);
   const [newHabit, setNewHabit] = useState("");
+  const bumpMood = useLunaMoodTrigger();
 
   const toggle = (id: string) =>
-    setList((l) => l.map((h) => (h.id === id ? { ...h, status: h.status === "done" ? "not_started" : "done" } : h)));
+    setList((l) =>
+      l.map((h) => {
+        if (h.id !== id) return h;
+        const nextStatus = h.status === "done" ? "not_started" : "done";
+        // Luna reacts: celebrate when a ritual is marked done, focused when reopened.
+        bumpMood(nextStatus === "done" ? "celebrate" : "focused", 9000);
+        return { ...h, status: nextStatus };
+      }),
+    );
 
   const add = () => {
     if (!newHabit.trim()) return;
