@@ -20,9 +20,9 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 function Settings() {
   const { theme, toggle } = useTheme();
+  const { reducedMotion, setReducedMotion } = useLunaSystem();
   const [notifs, setNotifs] = useState({ daily: true, streaks: true, whispers: true, recap: false });
   const [privacy, setPrivacy] = useState({ biometric: true, analytics: false, share: false });
-  const [reduceMotion, setReduceMotion] = useState(false);
 
   return (
     <Shell>
