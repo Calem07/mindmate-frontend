@@ -5,6 +5,7 @@ import { SuccessState } from "@/components/StateViews";
 import { moods, luna } from "@/data/mock";
 import lunaImg from "@/assets/luna.png";
 import { Sparkles, ArrowRight } from "lucide-react";
+import { useLunaMoodTrigger } from "@/components/LunaSystemProvider";
 
 export const Route = createFileRoute("/check-in")({
   head: () => ({ meta: [{ title: "Daily Check-In — MindMate" }, { name: "description", content: "Pause, breathe, and share how you feel with Luna." }] }),
