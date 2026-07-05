@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import luna from "@/assets/luna.png";
+import { useLunaSystem } from "@/components/LunaSystemProvider";
 
 export type LunaMood =
   | "warm"
@@ -30,6 +31,7 @@ const SIZE_MAP = { xs: 28, sm: 40, md: 56, lg: 80, xl: 120 } as const;
  */
 export function useAmbientLunaMood(): LunaMood {
   const [mood, setMood] = useState<LunaMood>("warm");
+  const { transientMood } = useLunaSystem();
   useEffect(() => {
     const h = new Date().getHours();
     if (h < 6) setMood("sleepy");
@@ -38,7 +40,7 @@ export function useAmbientLunaMood(): LunaMood {
     else if (h < 21) setMood("calm");
     else setMood("caring");
   }, []);
-  return mood;
+  return transientMood ?? mood;
 }
 
 export function LunaAvatar({
@@ -54,6 +56,7 @@ export function LunaAvatar({
 }) {
   const px = SIZE_MAP[size];
   const style = MOOD_STYLES[mood];
+  const { reducedMotion } = useLunaSystem();
 
   return (
     <div
@@ -62,15 +65,15 @@ export function LunaAvatar({
     >
       {/* Animated aura ring */}
       <div
-        className={`absolute inset-0 rounded-full bg-gradient-to-br ${style.ring} blur-md opacity-80 animate-pulse`}
-        style={{ animationDuration: "3.2s" }}
+        className={`absolute inset-0 rounded-full bg-gradient-to-br ${style.ring} blur-md opacity-80 ${reducedMotion ? "" : "animate-pulse"}`}
+        style={reducedMotion ? undefined : { animationDuration: "3.2s" }}
         aria-hidden
       />
       {/* Solid ring */}
       <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${style.ring} ${style.glow}`} aria-hidden />
       {/* Cat */}
       <div
-        className={`relative z-10 rounded-full bg-background/40 backdrop-blur-sm p-[8%] ${bounce ? "animate-[rise_2.6s_ease-in-out_infinite]" : ""}`}
+        className={`relative z-10 rounded-full bg-background/40 backdrop-blur-sm p-[8%] ${bounce && !reducedMotion ? "animate-[rise_2.6s_ease-in-out_infinite]" : ""}`}
         style={{ width: "100%", height: "100%" }}
       >
         <img
@@ -106,9 +109,10 @@ export function LunaMoodDot({ mood }: { mood: LunaMood }) {
     focused: "watching quietly",
     celebrate: "celebrating you",
   };
+  const { reducedMotion } = useLunaSystem();
   return (
     <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple" />
+      <span className={`h-1.5 w-1.5 rounded-full bg-purple ${reducedMotion ? "" : "animate-pulse"}`} />
       {label[mood]}
     </span>
   );

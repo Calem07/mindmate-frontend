@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { useTheme } from "@/components/ThemeProvider";
+import { useLunaSystem } from "@/components/LunaSystemProvider";
 import { Bell, Shield, Sparkles, Moon, Sun, ChevronRight, HelpCircle, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
@@ -19,9 +20,9 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 function Settings() {
   const { theme, toggle } = useTheme();
+  const { reducedMotion, setReducedMotion } = useLunaSystem();
   const [notifs, setNotifs] = useState({ daily: true, streaks: true, whispers: true, recap: false });
   const [privacy, setPrivacy] = useState({ biometric: true, analytics: false, share: false });
-  const [reduceMotion, setReduceMotion] = useState(false);
 
   return (
     <Shell>
@@ -44,7 +45,7 @@ function Settings() {
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15"><Sparkles className="h-5 w-5 text-primary" /></div>
               <div className="flex-1"><p className="text-sm font-semibold">Reduce motion</p><p className="text-xs text-muted-foreground">Calmer animations</p></div>
-              <Toggle on={reduceMotion} onChange={setReduceMotion} />
+              <Toggle on={reducedMotion} onChange={setReducedMotion} />
             </div>
           </div>
         </div>

@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { SplashScreen } from "@/components/SplashScreen";
+import { LunaSystemProvider } from "@/components/LunaSystemProvider";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -133,11 +134,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <SplashScreen />
-          <Outlet />
-          <Toaster richColors theme="system" position="top-center" />
-        </AuthProvider>
+        <LunaSystemProvider>
+          <AuthProvider>
+            <SplashScreen />
+            <Outlet />
+            <Toaster richColors theme="system" position="top-center" />
+          </AuthProvider>
+        </LunaSystemProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
