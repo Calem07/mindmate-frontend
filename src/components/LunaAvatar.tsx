@@ -56,6 +56,7 @@ export function LunaAvatar({
 }) {
   const px = SIZE_MAP[size];
   const style = MOOD_STYLES[mood];
+  const { reducedMotion } = useLunaSystem();
 
   return (
     <div
@@ -64,15 +65,15 @@ export function LunaAvatar({
     >
       {/* Animated aura ring */}
       <div
-        className={`absolute inset-0 rounded-full bg-gradient-to-br ${style.ring} blur-md opacity-80 animate-pulse`}
-        style={{ animationDuration: "3.2s" }}
+        className={`absolute inset-0 rounded-full bg-gradient-to-br ${style.ring} blur-md opacity-80 ${reducedMotion ? "" : "animate-pulse"}`}
+        style={reducedMotion ? undefined : { animationDuration: "3.2s" }}
         aria-hidden
       />
       {/* Solid ring */}
       <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${style.ring} ${style.glow}`} aria-hidden />
       {/* Cat */}
       <div
-        className={`relative z-10 rounded-full bg-background/40 backdrop-blur-sm p-[8%] ${bounce ? "animate-[rise_2.6s_ease-in-out_infinite]" : ""}`}
+        className={`relative z-10 rounded-full bg-background/40 backdrop-blur-sm p-[8%] ${bounce && !reducedMotion ? "animate-[rise_2.6s_ease-in-out_infinite]" : ""}`}
         style={{ width: "100%", height: "100%" }}
       >
         <img
