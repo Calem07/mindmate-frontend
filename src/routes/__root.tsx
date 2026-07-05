@@ -134,11 +134,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <SplashScreen />
-          <Outlet />
-          <Toaster richColors theme="system" position="top-center" />
-        </AuthProvider>
+        <LunaSystemProvider>
+          <AuthProvider>
+            <SplashScreen />
+            <Outlet />
+            <Toaster richColors theme="system" position="top-center" />
+          </AuthProvider>
+        </LunaSystemProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
