@@ -73,7 +73,7 @@ export function LunaAvatar({
       <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${style.ring} ${style.glow}`} aria-hidden />
       {/* Cat */}
       <div
-        className={`relative z-10 rounded-full bg-background/40 backdrop-blur-sm p-[8%] ${bounce && !reducedMotion ? "animate-[rise_2.6s_ease-in-out_infinite]" : ""}`}
+        className={`relative z-10 rounded-full bg-background/40 backdrop-blur-sm p-[8%] ${bounce && !reducedMotion ? "animate-float" : ""}`}
         style={{ width: "100%", height: "100%" }}
       >
         <img
