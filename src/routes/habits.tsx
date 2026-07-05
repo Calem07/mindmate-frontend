@@ -4,6 +4,7 @@ import { Shell, ScreenHeader } from "@/components/Shell";
 import { EmptyState } from "@/components/StateViews";
 import { habits as initialHabits } from "@/data/mock";
 import { Plus, CheckCircle2, Circle, Flame, Sprout } from "lucide-react";
+import { useLunaMoodTrigger } from "@/components/LunaSystemProvider";
 
 export const Route = createFileRoute("/habits")({
   head: () => ({ meta: [{ title: "Habits — MindMate" }, { name: "description", content: "Small daily rituals that grow your garden." }] }),
