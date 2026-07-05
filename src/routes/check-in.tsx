@@ -17,6 +17,7 @@ const tags = ["Anxious", "Hopeful", "Tired", "Focused", "Lonely", "Grateful", "S
 
 function CheckIn() {
   const navigate = useNavigate();
+  const bumpMood = useLunaMoodTrigger();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [mood, setMood] = useState<string | null>(null);
   const [energy, setEnergy] = useState(2);
@@ -30,8 +31,12 @@ function CheckIn() {
   const next = () => {
     if (step < 4) return setStep((step + 1) as 1 | 2 | 3 | 4);
     setDone(true);
+    // Luna reacts to the completed check-in — caring if the mood was low, celebrating otherwise.
+    const low = mood ? /sad|anx|tired|stress|lonely|drain/i.test(mood) : false;
+    bumpMood(low ? "caring" : "celebrate", 12000);
     setTimeout(() => navigate({ to: "/" }), 1400);
   };
+
 
   return (
     <Shell>
