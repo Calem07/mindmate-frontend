@@ -57,6 +57,12 @@ export function LunaAvatar({
   const px = SIZE_MAP[size];
   const style = MOOD_STYLES[mood];
   const { reducedMotion } = useLunaSystem();
+  const MOOD_ANIM: Partial<Record<LunaMood, string>> = {
+    caring: "luna-anim-caring",
+    focused: "luna-anim-focused",
+    celebrate: "luna-anim-celebrate",
+  };
+  const moodAnim = MOOD_ANIM[mood];
 
   return (
     <div
@@ -81,9 +87,10 @@ export function LunaAvatar({
           alt="Luna"
           width={px}
           height={px}
-          className={`h-full w-full object-contain drop-shadow ${style.tint ?? ""}`}
+          className={`h-full w-full object-contain drop-shadow ${style.tint ?? ""} ${!reducedMotion && moodAnim ? moodAnim : ""}`}
         />
       </div>
+
       {/* Expression overlay */}
       {style.overlay && (
         <span

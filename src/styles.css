@@ -177,6 +177,29 @@
 .animate-ripple { animation: ripple 700ms ease-out forwards; }
 .animate-rise { animation: rise 1100ms ease-out forwards; }
 
+/* Luna mood-specific micro-animations. All transform around the element's
+   own center so the cat stays perfectly centered inside her aura. */
+@keyframes luna-heartbeat {
+  0%, 60%, 100% { transform: scale(1); }
+  20% { transform: scale(1.08); }
+  35% { transform: scale(0.98); }
+  45% { transform: scale(1.05); }
+}
+@keyframes luna-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@keyframes luna-celebrate {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  20% { transform: scale(1.1) rotate(-6deg); }
+  40% { transform: scale(1.06) rotate(5deg); }
+  60% { transform: scale(1.1) rotate(-3deg); }
+  80% { transform: scale(1.04) rotate(2deg); }
+}
+.luna-anim-caring    { transform-origin: 50% 50%; animation: luna-heartbeat 2.2s ease-in-out infinite; }
+.luna-anim-focused   { transform-origin: 50% 50%; animation: luna-breathe 4.5s ease-in-out infinite; }
+.luna-anim-celebrate { transform-origin: 50% 50%; animation: luna-celebrate 1.4s ease-in-out infinite; }
+
 /* Reduced motion: user-toggled global calm */
 .reduce-motion *,
 .reduce-motion *::before,
