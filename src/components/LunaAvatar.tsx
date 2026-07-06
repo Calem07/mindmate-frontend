@@ -57,6 +57,12 @@ export function LunaAvatar({
   const px = SIZE_MAP[size];
   const style = MOOD_STYLES[mood];
   const { reducedMotion } = useLunaSystem();
+  const MOOD_ANIM: Partial<Record<LunaMood, string>> = {
+    caring: "luna-anim-caring",
+    focused: "luna-anim-focused",
+    celebrate: "luna-anim-celebrate",
+  };
+  const moodAnim = MOOD_ANIM[mood];
 
   return (
     <div
