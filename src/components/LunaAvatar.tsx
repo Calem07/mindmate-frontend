@@ -81,9 +81,10 @@ export function LunaAvatar({
           alt="Luna"
           width={px}
           height={px}
-          className={`h-full w-full object-contain drop-shadow ${style.tint ?? ""}`}
+          className={`h-full w-full object-contain drop-shadow ${style.tint ?? ""} ${!reducedMotion && moodAnim ? moodAnim : ""}`}
         />
       </div>
+
       {/* Expression overlay */}
       {style.overlay && (
         <span
