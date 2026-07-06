@@ -51,7 +51,7 @@ function FutureMe() {
                 {unlocked ? <Icon className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">{l.title}</p>
+                <p className="text-sm font-semibold leading-snug line-clamp-2">{l.title}</p>
                 <p className="text-[11px] text-muted-foreground">{unlocked ? "Unlocked" : `Unlocks ${l.unlocksAt}`}</p>
               </div>
               <button className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-semibold ${unlocked ? "gradient-primary text-white" : "bg-white/5 text-muted-foreground"}`}>
