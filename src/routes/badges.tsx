@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Shell, ScreenHeader } from "@/components/Shell";
+import { EmptyState } from "@/components/StateViews";
 import { badges, challenges } from "@/data/mock";
-import { Trophy } from "lucide-react";
+import { Trophy, Target } from "lucide-react";
 
 export const Route = createFileRoute("/badges")({
   head: () => ({ meta: [{ title: "Badges & Challenges — MindMate" }, { name: "description", content: "Earned moments and active challenges." }] }),
