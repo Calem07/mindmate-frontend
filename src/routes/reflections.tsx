@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Shell, ScreenHeader } from "@/components/Shell";
+import { EmptyState } from "@/components/StateViews";
 import { reflections } from "@/data/mock";
 import { Brain, Sparkles, Clock, Heart, ChevronRight } from "lucide-react";
-import lunaImg from "@/assets/luna.png";
+import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
 
 const iconMap = { Brain, Sparkles, Clock, Heart };
 const colorMap: Record<string, string> = {
