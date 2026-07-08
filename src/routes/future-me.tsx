@@ -42,6 +42,13 @@ function FutureMe() {
 
       <section className="space-y-3 px-5 pt-5">
         <h3 className="text-sm font-semibold">Your capsules</h3>
+        {futureMeLetters.length === 0 && (
+          <div className="glass-strong flex flex-col items-center gap-2 rounded-3xl px-5 py-8 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple/15"><Lock className="h-5 w-5 text-purple" /></div>
+            <p className="text-sm font-semibold">No capsules yet</p>
+            <p className="text-[11px] text-muted-foreground">Seal your first letter — Luna will guard it until it's time.</p>
+          </div>
+        )}
         {futureMeLetters.map((l) => {
           const Icon = (iconMap as Record<string, typeof BookOpen>)[l.icon] ?? BookOpen;
           const unlocked = l.status === "unlocked";

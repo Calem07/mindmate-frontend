@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Shell, ScreenHeader } from "@/components/Shell";
+import { EmptyState } from "@/components/StateViews";
 import { reflections } from "@/data/mock";
 import { Brain, Sparkles, Clock, Heart, ChevronRight } from "lucide-react";
-import lunaImg from "@/assets/luna.png";
+import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
 
 const iconMap = { Brain, Sparkles, Clock, Heart };
 const colorMap: Record<string, string> = {
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/reflections")({
 });
 
 function Reflections() {
+  const ambientMood = useAmbientLunaMood();
   return (
     <Shell>
       <ScreenHeader title="AI Reflections" back />
@@ -25,7 +27,7 @@ function Reflections() {
         <div className="glass-strong relative overflow-hidden rounded-3xl p-5 glow-purple">
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-purple/30 blur-3xl" />
           <div className="relative flex items-center gap-4">
-            <img src={lunaImg} alt="" width={64} height={64} className="h-16 w-16 animate-float object-contain" />
+            <LunaAvatar mood={ambientMood} size="lg" bounce />
             <div className="min-w-0">
               <p className="text-sm font-semibold">Luna's reflection</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -38,6 +40,9 @@ function Reflections() {
 
       <section className="px-5 pt-6">
         <h3 className="mb-3 text-sm font-semibold">Patterns I've noticed</h3>
+        {reflections.length === 0 ? (
+          <EmptyState icon={Sparkles} title="No patterns yet" body="Check in a few more times — Luna will start noticing the shape of your days." />
+        ) : (
         <div className="space-y-2.5">
           {reflections.map((r) => {
             const Icon = (iconMap as Record<string, typeof Brain>)[r.icon] ?? Brain;
@@ -55,6 +60,7 @@ function Reflections() {
             );
           })}
         </div>
+        )}
       </section>
 
       <section className="px-5 pt-6">

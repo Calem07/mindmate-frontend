@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { examPresets, examSessions } from "@/data/mock";
+import { EmptyState } from "@/components/StateViews";
 import { Play, Pause, RotateCcw, BookOpen, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/exam-focus")({
@@ -76,22 +77,26 @@ function ExamFocus() {
 
       <section className="px-5 pt-6">
         <h3 className="mb-3 text-sm font-semibold">Today's sessions</h3>
-        <div className="space-y-2.5">
-          {examSessions.map((s) => (
-            <div key={s.id} className="glass flex items-center gap-3 rounded-2xl p-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15">
-                <BookOpen className="h-5 w-5 text-primary" />
+        {examSessions.length === 0 ? (
+          <EmptyState icon={Clock} title="No sessions today" body="Press play above to start your first quiet focus block." />
+        ) : (
+          <div className="space-y-2.5">
+            {examSessions.map((s) => (
+              <div key={s.id} className="glass flex items-center gap-3 rounded-2xl p-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{s.subject}</p>
+                  <p className="text-[11px] text-muted-foreground"><Clock className="mr-1 inline h-3 w-3" />{s.duration} min · {s.date}</p>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold ${s.completed ? "bg-secondary/20 text-secondary" : "bg-purple/20 text-purple"}`}>
+                  {s.completed ? "Done" : "Active"}
+                </span>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">{s.subject}</p>
-                <p className="text-[11px] text-muted-foreground"><Clock className="mr-1 inline h-3 w-3" />{s.duration} min · {s.date}</p>
-              </div>
-              <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold ${s.completed ? "bg-secondary/20 text-secondary" : "bg-purple/20 text-purple"}`}>
-                {s.completed ? "Done" : "Active"}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </Shell>
   );
