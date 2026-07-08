@@ -44,31 +44,41 @@ function Badges() {
       </div>
 
       {tab === "Badges" ? (
-        <section className="grid grid-cols-3 gap-3 px-5 pt-5">
-          {badges.map((b) => (
-            <div key={b.id} className={`glass flex flex-col items-center gap-1 rounded-2xl p-3 text-center ${b.earned ? "" : "opacity-50 grayscale"}`}>
-              <span className="text-3xl">{b.icon}</span>
-              <p className="text-[11px] font-semibold">{b.name}</p>
-              <p className="text-[9px] leading-tight text-muted-foreground">{b.desc}</p>
+        <section className="px-5 pt-5">
+          {badges.length === 0 ? (
+            <EmptyState icon={Trophy} title="No badges yet" body="Small moments earn them — tend a habit or check in today." />
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {badges.map((b) => (
+                <div key={b.id} className={`glass flex flex-col items-center gap-1 rounded-2xl p-3 text-center ${b.earned ? "" : "opacity-50 grayscale"}`}>
+                  <span className="text-3xl">{b.icon}</span>
+                  <p className="text-[11px] font-semibold">{b.name}</p>
+                  <p className="text-[9px] leading-tight text-muted-foreground">{b.desc}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </section>
       ) : (
         <section className="space-y-3 px-5 pt-5">
-          {challenges.map((c) => (
-            <div key={c.id} className="glass-strong rounded-3xl p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{c.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{c.reward}</p>
+          {challenges.length === 0 ? (
+            <EmptyState icon={Target} title="No active challenges" body="New quests appear as you grow. Check back soon." />
+          ) : (
+            challenges.map((c) => (
+              <div key={c.id} className="glass-strong rounded-3xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{c.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{c.reward}</p>
+                  </div>
+                  <span className="shrink-0 text-sm font-bold text-gradient">{c.progress}/{c.total}</span>
                 </div>
-                <span className="shrink-0 text-sm font-bold text-gradient">{c.progress}/{c.total}</span>
+                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full gradient-primary rounded-full" style={{ width: `${(c.progress / c.total) * 100}%` }} />
+                </div>
               </div>
-              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                <div className="h-full gradient-primary rounded-full" style={{ width: `${(c.progress / c.total) * 100}%` }} />
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </section>
       )}
     </Shell>
