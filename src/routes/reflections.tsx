@@ -60,6 +60,7 @@ function Reflections() {
             );
           })}
         </div>
+        )}
       </section>
 
       <section className="px-5 pt-6">
