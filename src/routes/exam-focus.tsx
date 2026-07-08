@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { examPresets, examSessions } from "@/data/mock";
-import { examPresets, examSessions } from "@/data/mock";
 import { EmptyState } from "@/components/StateViews";
 import { Play, Pause, RotateCcw, BookOpen, Clock } from "lucide-react";
 
