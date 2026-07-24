@@ -14,36 +14,56 @@ export const Route = createFileRoute("/signup")({
       { name: "description", content: "Join MindMate. Luna is excited to meet you." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") ? s.next : undefined,
+  }),
   component: SignUpPage,
 });
+
+function safeNext(next: string | undefined): string {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+}
 
 function SignUpPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const target = safeNext(next);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const go = () => {
+    sessionStorage.setItem("mindmate-splash-shown", "1");
+    if (target === "/") navigate({ to: "/" });
+    else window.location.assign(target);
+  };
+
   useEffect(() => {
-    if (!loading && user) { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
-  }, [user, loading, navigate]);
+    if (!loading && user) go();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
+      const emailRedirectTo =
+        target === "/"
+          ? `${window.location.origin}/`
+          : `${window.location.origin}/signin?next=${encodeURIComponent(target)}`;
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo,
           data: { display_name: name || email.split("@")[0] },
         },
       });
       if (error) throw error;
       toast.success("Welcome to MindMate! Check your email to confirm.");
-      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
+      go();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign up failed");
     } finally {
@@ -54,14 +74,18 @@ function SignUpPage() {
   const handleGoogle = async () => {
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+      const redirectUri =
+        target === "/"
+          ? window.location.origin
+          : `${window.location.origin}/signin?next=${encodeURIComponent(target)}`;
+      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: redirectUri });
       if (result.error) {
         toast.error(result.error.message ?? "Google sign-in failed");
         setBusy(false);
         return;
       }
       if (result.redirected) return;
-      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
+      go();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign-in failed");
       setBusy(false);
