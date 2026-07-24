@@ -14,19 +14,35 @@ export const Route = createFileRoute("/signin")({
       { name: "description", content: "Welcome back. Luna missed you." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") ? s.next : undefined,
+  }),
   component: SignInPage,
 });
+
+function safeNext(next: string | undefined): string {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+}
 
 function SignInPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const target = safeNext(next);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const go = () => {
+    sessionStorage.setItem("mindmate-splash-shown", "1");
+    if (target === "/") navigate({ to: "/" });
+    else window.location.assign(target);
+  };
+
   useEffect(() => {
-    if (!loading && user) { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
-  }, [user, loading, navigate]);
+    if (!loading && user) go();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +51,7 @@ function SignInPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success("Welcome back 💜");
-      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
+      go();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign in failed");
     } finally {
@@ -46,14 +62,18 @@ function SignInPage() {
   const handleGoogle = async () => {
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+      const redirectUri =
+        target === "/"
+          ? window.location.origin
+          : `${window.location.origin}/signin?next=${encodeURIComponent(target)}`;
+      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: redirectUri });
       if (result.error) {
         toast.error(result.error.message ?? "Google sign-in failed");
         setBusy(false);
         return;
       }
       if (result.redirected) return;
-      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
+      go();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign-in failed");
       setBusy(false);
