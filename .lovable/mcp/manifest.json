@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://fnecqotxsrdgroulseip.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "mindmate-mcp",
+      "version": "0.1.0",
+      "title": "MindMate"
+    },
+    "tools": [
+      {
+        "name": "get_profile",
+        "title": "Get my MindMate profile",
+        "description": "Return the signed-in user's MindMate profile: display name, level, XP, and bond with Luna.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_recent_luna_messages",
+        "title": "List recent Luna messages",
+        "description": "List the signed-in user's most recent Luna chat messages (both their own and Luna's replies), newest last.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "How many recent messages to return (1-100, default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "send_message_to_luna",
+        "title": "Send a message to Luna",
+        "description": "Send a message from the signed-in user to Luna. Persists both the user's message and Luna's reply to the user's chat history, and returns Luna's reply.",
+        "annotations": {
+          "readOnlyHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000,
+              "description": "The user's message to Luna."
+            }
+          },
+          "required": [
+            "message"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
