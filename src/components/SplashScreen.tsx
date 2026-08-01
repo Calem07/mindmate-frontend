@@ -8,11 +8,16 @@ import { useAuth } from "@/components/AuthProvider";
 
 export function SplashScreen() {
   const { user, loading } = useAuth();
+  const [hydrated, setHydrated] = useState(false);
   const [minElapsed, setMinElapsed] = useState(false);
   const [dismissed, setDismissed] = useState(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem("mindmate-splash-shown") === "1";
   });
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setMinElapsed(true), 1600);
@@ -29,6 +34,7 @@ export function SplashScreen() {
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const sessionShown = typeof window !== "undefined" && sessionStorage.getItem("mindmate-splash-shown") === "1";
+  if (!hydrated) return null;
   if (dismissed || sessionShown || HIDDEN_ROUTES.includes(pathname)) return null;
 
   // Never let the welcome overlay block a protected route while auth is settling.
