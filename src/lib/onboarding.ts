@@ -1,3 +1,5 @@
+import { getStoredAuth } from "@/lib/api/client";
+
 export type OnboardingStage = "check-in" | "habits" | "goals" | "future-me" | "journal" | "complete";
 
 type OnboardingState = { stage: OnboardingStage };
@@ -26,8 +28,9 @@ export function setOnboarding(userId: string, stage: OnboardingStage) {
 }
 
 export function advanceOnboarding(userId: string | undefined, from: OnboardingStage, to: OnboardingStage) {
-  if (userId && getOnboarding(userId)?.stage === from) {
-    setOnboarding(userId, to);
+  const effectiveUserId = userId ?? getStoredAuth()?.user.id;
+  if (effectiveUserId && getOnboarding(effectiveUserId)?.stage === from) {
+    setOnboarding(effectiveUserId, to);
     return true;
   }
   return false;
