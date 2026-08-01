@@ -17,6 +17,6 @@ export type Profile = {
 
 export const profileApi = {
   get: () => apiFetch<Profile>("/me/profile"),
-  update: (input: Partial<Pick<Profile, "displayName" | "avatarUrl" | "timezone" | "bond">>) =>
+  update: (input: Partial<Pick<Profile, "displayName" | "avatarUrl" | "timezone">>) =>
     apiFetch<Profile>("/me/profile", { method: "PATCH", body: jsonBody(input) }),
 };

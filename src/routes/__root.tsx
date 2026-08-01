@@ -16,6 +16,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { SplashScreen } from "@/components/SplashScreen";
 import { LunaSystemProvider } from "@/components/LunaSystemProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
+import { OnboardingProvider } from "@/components/OnboardingProvider";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -138,9 +139,11 @@ function RootComponent() {
         <LunaSystemProvider>
           <AuthProvider>
             <NotificationProvider>
-              <SplashScreen />
-              <Outlet />
-              <Toaster richColors theme="system" position="top-center" />
+              <OnboardingProvider>
+                <SplashScreen />
+                <Outlet />
+                <Toaster richColors theme="system" position="top-center" />
+              </OnboardingProvider>
             </NotificationProvider>
           </AuthProvider>
         </LunaSystemProvider>

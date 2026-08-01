@@ -1,10 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { EmptyState } from "@/components/StateViews";
 import { goalsApi, type Goal } from "@/lib/api/goals";
 import { Plus, Target, Trophy } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { advanceOnboarding } from "@/lib/onboarding";
 
 export const Route = createFileRoute("/goals")({
   head: () => ({
@@ -22,13 +24,20 @@ function Goals() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [newGoal, setNewGoal] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     goalsApi
       .list(tab === "Active" ? "ACTIVE" : "COMPLETED")
-      .then(setGoals)
+      .then((rows) => {
+        setGoals(rows);
+        if (tab === "Active" && rows.length > 0 && advanceOnboarding(user?.id, "goals", "future-me")) {
+          navigate({ to: "/future-me" });
+        }
+      })
       .catch((err) => toast.error(err instanceof Error ? err.message : "Could not load goals"));
-  }, [tab]);
+  }, [navigate, tab, user?.id]);
 
   const addGoal = async () => {
     if (!newGoal.trim()) return;
@@ -41,6 +50,7 @@ function Goals() {
       setNewGoal("");
       setNewCategory("");
       setShowAdd(false);
+      if (advanceOnboarding(user?.id, "goals", "future-me")) navigate({ to: "/future-me" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not add goal");
     }

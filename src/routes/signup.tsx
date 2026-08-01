@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { AuthLayout, Field, GoogleIcon } from "@/components/AuthLayout";
 import { authApi } from "@/lib/api/auth";
+import { startOnboarding } from "@/lib/onboarding";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -35,11 +36,11 @@ function SignUpPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await authApi.register({ displayName: name || email.split("@")[0], email, password });
-      toast.success("Welcome to MindMate! Check your email to confirm.");
+      const auth = await authApi.register({ displayName: name || email.split("@")[0], email, password });
+      startOnboarding(auth.user.id);
       {
         sessionStorage.setItem("mindmate-splash-shown", "1");
-        navigate({ to: "/" });
+        navigate({ to: "/check-in" });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign up failed");

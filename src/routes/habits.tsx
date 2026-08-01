@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
@@ -6,6 +6,8 @@ import { EmptyState } from "@/components/StateViews";
 import { habitsApi, type Habit, type HabitTemplate } from "@/lib/api/habits";
 import { Plus, CheckCircle2, Circle, Flame, Sprout } from "lucide-react";
 import { useLunaMoodTrigger } from "@/components/LunaSystemProvider";
+import { useAuth } from "@/components/AuthProvider";
+import { advanceOnboarding } from "@/lib/onboarding";
 
 export const Route = createFileRoute("/habits")({
   head: () => ({
@@ -24,6 +26,8 @@ function Habits() {
   const [newHabit, setNewHabit] = useState("");
   const [templates, setTemplates] = useState<HabitTemplate[]>([]);
   const bumpMood = useLunaMoodTrigger();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     habitsApi
@@ -61,8 +65,10 @@ function Habits() {
     try {
       await habitsApi.create({ name: newHabit.trim(), icon: "Sprout", xpReward: 10 });
       setList(await habitsApi.today());
+      const onboarding = advanceOnboarding(user?.id, "habits", "goals");
       setNewHabit("");
       setShowAdd(false);
+      if (onboarding) navigate({ to: "/goals" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not add habit");
     }
@@ -187,7 +193,7 @@ function Habits() {
                 <p className="text-xs font-semibold text-muted-foreground">A few gentle ideas from Luna</p>
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {templates.slice(0, 5).map((template) => (
-                    <button key={template.id} onClick={async () => { try { await habitsApi.createFromTemplate(template.id); setList(await habitsApi.today()); setShowAdd(false); } catch (err) { toast.error(err instanceof Error ? err.message : "Could not plant habit"); } }} className="glass min-w-36 rounded-2xl p-3 text-left">
+                    <button key={template.id} onClick={async () => { try { await habitsApi.createFromTemplate(template.id); setList(await habitsApi.today()); const onboarding = advanceOnboarding(user?.id, "habits", "goals"); setShowAdd(false); if (onboarding) navigate({ to: "/goals" }); } catch (err) { toast.error(err instanceof Error ? err.message : "Could not plant habit"); } }} className="glass min-w-36 rounded-2xl p-3 text-left">
                       <p className="text-xs font-semibold">{template.name}</p>
                       <p className="mt-1 text-[10px] text-muted-foreground">{template.description}</p>
                     </button>

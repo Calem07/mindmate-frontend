@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
@@ -7,6 +7,8 @@ import { moods } from "@/lib/api/checkIns";
 import { gratitudeApi, type GratitudeEntry } from "@/lib/api/gratitude";
 import { journalApi, type JournalEntry } from "@/lib/api/journal";
 import { Plus, Sparkles, Heart, BookOpen } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { advanceOnboarding, getOnboarding, setOnboarding } from "@/lib/onboarding";
 
 export const Route = createFileRoute("/journal")({
   head: () => ({
@@ -29,6 +31,9 @@ function Journal() {
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [gratitudeEntries, setGratitudeEntries] = useState<GratitudeEntry[]>([]);
   const [journalPrompts, setJournalPrompts] = useState<string[]>([]);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const onboarding = getOnboarding(user?.id)?.stage === "journal";
   const prompt =
     journalPrompts[new Date().getDate() % Math.max(journalPrompts.length, 1)] ??
     "What is asking for your attention today?";
@@ -62,6 +67,9 @@ function Journal() {
         setGratitude(["", "", ""]);
       }
       setTimeout(() => setSaved(null), 2400);
+      if (advanceOnboarding(user?.id, "journal", "complete")) {
+        setTimeout(() => navigate({ to: "/" }), 900);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save");
     }
@@ -118,6 +126,11 @@ function Journal() {
             >
               Save entry
             </button>
+            {onboarding && (
+              <button type="button" onClick={() => { setOnboarding(user!.id, "complete"); navigate({ to: "/" }); }} className="w-full py-2 text-xs font-semibold text-muted-foreground">
+                Skip for now
+              </button>
+            )}
 
             <h3 className="pt-2 text-sm font-semibold">Recent entries</h3>
             {journalEntries.length === 0 ? (

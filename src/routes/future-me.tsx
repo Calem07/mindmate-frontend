@@ -1,10 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { SuccessState } from "@/components/StateViews";
 import { futureLettersApi, type FutureLetter } from "@/lib/api/futureLetters";
 import { BookOpen, Target, Heart, Lock, Sparkles, CalendarDays, X } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { advanceOnboarding, getOnboarding } from "@/lib/onboarding";
 
 const iconMap = { BookOpen, Target, Heart };
 
@@ -32,6 +34,9 @@ function FutureMe() {
   const [unlocksAt, setUnlocksAt] = useState(() => futureDate(30));
   const [openedLetter, setOpenedLetter] = useState<FutureLetter | null>(null);
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const onboarding = getOnboarding(user?.id)?.stage === "future-me";
 
   useEffect(() => {
     futureLettersApi
@@ -56,6 +61,9 @@ function FutureMe() {
       setUnlocksAt(futureDate(30));
       setWriting(false);
       setTimeout(() => setSealed(false), 2400);
+      if (advanceOnboarding(user?.id, "future-me", "journal")) {
+        setTimeout(() => navigate({ to: "/journal" }), 900);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not seal letter");
     } finally {
@@ -93,6 +101,11 @@ function FutureMe() {
           >
             + New letter
           </button>
+          {onboarding && (
+            <button type="button" onClick={() => { advanceOnboarding(user?.id, "future-me", "journal"); navigate({ to: "/journal" }); }} className="relative mt-2 w-full py-2 text-xs font-semibold text-muted-foreground">
+              Skip for now
+            </button>
+          )}
         </div>
       </section>
 

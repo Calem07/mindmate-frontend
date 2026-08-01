@@ -222,9 +222,9 @@ function Home() {
               </div>
               <p className="text-xs text-muted-foreground">{bondPct}% Bond · {lunaMoodLabel(bondPct)}</p>
               <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                <div className="h-full gradient-primary rounded-full" style={{ width: `${xpProgress}%` }} />
+                <div className="h-full gradient-primary rounded-full" style={{ width: `${bondPct}%` }} />
               </div>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">{xp.toLocaleString()} / {nextXp.toLocaleString()} XP to next bond</p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">{bondPct}% Bond · grows with each meaningful interaction</p>
             </div>
           </div>
           <p className="relative mt-4 text-sm leading-relaxed text-foreground/90 italic">

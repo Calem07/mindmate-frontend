@@ -8,6 +8,8 @@ import lunaImg from "@/assets/luna.png";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { useLunaMoodTrigger } from "@/components/LunaSystemProvider";
 import { lunaApi } from "@/lib/api/luna";
+import { useAuth } from "@/components/AuthProvider";
+import { advanceOnboarding } from "@/lib/onboarding";
 
 export const Route = createFileRoute("/check-in")({
   head: () => ({
@@ -33,6 +35,7 @@ const tags = [
 ];
 function CheckIn() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const bumpMood = useLunaMoodTrigger();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [mood, setMood] = useState<Mood | null>(null);
@@ -73,10 +76,11 @@ function CheckIn() {
       return;
     }
     setDone(true);
+    const onboarding = advanceOnboarding(user?.id, "check-in", "habits");
     // Luna reacts to the completed check-in — caring if the mood was low, celebrating otherwise.
     const low = mood ? /sad|anx|tired|stress|lonely|drain/i.test(mood) : false;
     bumpMood(low ? "caring" : "celebrate", 12000);
-    setTimeout(() => navigate({ to: "/" }), 1400);
+    setTimeout(() => navigate({ to: onboarding ? "/habits" : "/" }), 1400);
   };
 
   return (
