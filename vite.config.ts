@@ -14,6 +14,8 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [mcpPlugin()],
+    // The Lovable MCP plugin is optional development tooling. Keep it opt-in so
+    // production builds work reliably outside the Lovable sandbox, especially on Windows.
+    plugins: process.env.ENABLE_LOVABLE_MCP === "true" ? [mcpPlugin()] : [],
   },
 });
