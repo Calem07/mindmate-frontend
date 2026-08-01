@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Settings,
   Leaf,
@@ -18,14 +19,13 @@ import {
 import { LivingTree, type TreeStageKey } from "@/components/LivingTree";
 import { LunaAvatar, type LunaMood } from "@/components/LunaAvatar";
 import {
-  user,
-  luna,
-  gardenStages,
-  careActions,
-  growthTimeline,
-  type GardenStageKey,
+  gardenApi,
   type CareAction,
-} from "@/data/mock";
+  type Garden as GardenData,
+  type GardenStage,
+  type GardenStageKey,
+} from "@/lib/api/garden";
+import { lunaApi } from "@/lib/api/luna";
 
 import { Shell, ScreenHeader } from "@/components/Shell";
 
@@ -39,6 +39,7 @@ export const Route = createFileRoute("/garden")({
   component: Garden,
 });
 
+/* Legacy shelf seed removed from runtime; collectibles now come from Garden API.
 type Collectible = { emoji: string; name: string; owned: boolean };
 const collectibles: Collectible[] = [
   { emoji: "🌱", name: "Seed of Calm", owned: true },
@@ -48,9 +49,14 @@ const collectibles: Collectible[] = [
   { emoji: "🪷", name: "Lotus", owned: false },
   { emoji: "✨", name: "Stardust", owned: false },
 ];
+*/
 
 const ICON_MAP = {
-  ClipboardCheck, Droplet, BookOpen, Heart, Target,
+  ClipboardCheck,
+  Droplet,
+  BookOpen,
+  Heart,
+  Target,
 } as const;
 
 const STAGE_MOOD: Record<GardenStageKey, LunaMood> = {
@@ -60,18 +66,26 @@ const STAGE_MOOD: Record<GardenStageKey, LunaMood> = {
   bloom: "celebrate",
   ancient: "calm",
 };
+const luna = { name: "Luna" };
 
 /** Derive the active stage from any XP value via configured thresholds. */
-function deriveStage(xp: number) {
-  const idx = gardenStages.reduce(
-    (acc, s, i) => (xp >= s.xp ? i : acc),
-    0,
-  );
+function deriveStage(xp: number, gardenStages: GardenStage[]) {
+  if (gardenStages.length === 0) {
+    const stage: GardenStage = {
+      key: "seed",
+    emoji: "🌱",
+      title: "Seed",
+      xp: 0,
+      reward: "Begin growth",
+      lunaWhisper: "",
+    };
+    return { idx: 0, stage, next: stage, progress: 0 };
+  }
+  const idx = gardenStages.reduce((acc, s, i) => (xp >= s.xp ? i : acc), 0);
   const stage = gardenStages[idx];
   const next = gardenStages[idx + 1] ?? stage;
   const prev = stage;
-  const progress =
-    next === stage ? 1 : Math.min(1, (xp - prev.xp) / (next.xp - prev.xp));
+  const progress = next === stage ? 1 : Math.min(1, (xp - prev.xp) / (next.xp - prev.xp));
   return { idx, stage, next, progress };
 }
 
@@ -80,31 +94,75 @@ type Burst = { id: number; x: number; y: number; xp: number; label: string };
 function Garden() {
   const [hour, setHour] = useState<number | null>(null);
   const [bursts, setBursts] = useState<Burst[]>([]);
+  const [garden, setGarden] = useState<GardenData | null>(null);
+  const [lunaNote, setLunaNote] = useState("");
 
-  const { idx: currentStageIndex, stage: currentStage, next: nextStage, progress: xpProgress } =
-    useMemo(() => deriveStage(user.xp), []);
+  useEffect(() => {
+    gardenApi
+      .get()
+      .then(setGarden)
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Could not load garden"));
+  }, []);
+  useEffect(() => {
+    lunaApi.note("garden").then((note) => setLunaNote(note.content)).catch(() => setLunaNote(""));
+  }, []);
 
-  const [previewStage, setPreviewStage] = useState<GardenStageKey>(currentStage.key);
+  const gardenStages = useMemo(() => garden?.gardenStages ?? [], [garden]);
+  const careActions = useMemo(() => garden?.careActions ?? [], [garden]);
+  const growthTimeline = useMemo(() => garden?.growthTimeline ?? [], [garden]);
+  const collectibles = useMemo(() => garden?.collectibles ?? [], [garden]);
+  const user = { xp: garden?.xp ?? 0, level: garden?.level ?? 1 };
+
+  const {
+    idx: currentStageIndex,
+    stage: currentStage,
+    next: nextStage,
+    progress: xpProgress,
+  } = useMemo(() => deriveStage(user.xp, gardenStages), [gardenStages, user.xp]);
+
+  const [previewStage, setPreviewStage] = useState<GardenStageKey>("seed");
 
   useEffect(() => setHour(new Date().getHours()), []);
+  useEffect(() => setPreviewStage(currentStage.key), [currentStage.key]);
 
   const timeOfDay = useMemo(() => {
-    if (hour === null) return { label: "Day", Icon: Sun, tint: "from-amber-400/10 via-transparent to-primary/20" };
-    if (hour < 6 || hour >= 20) return { label: "Night", Icon: Moon, tint: "from-indigo-500/25 via-transparent to-primary/30" };
-    if (hour < 11) return { label: "Morning", Icon: Sun, tint: "from-amber-300/20 via-transparent to-cyan-400/15" };
-    if (hour < 17) return { label: "Afternoon", Icon: Sun, tint: "from-amber-200/10 via-transparent to-secondary/15" };
+    if (hour === null)
+      return { label: "Day", Icon: Sun, tint: "from-amber-400/10 via-transparent to-primary/20" };
+    if (hour < 6 || hour >= 20)
+      return {
+        label: "Night",
+        Icon: Moon,
+        tint: "from-indigo-500/25 via-transparent to-primary/30",
+      };
+    if (hour < 11)
+      return {
+        label: "Morning",
+        Icon: Sun,
+        tint: "from-amber-300/20 via-transparent to-cyan-400/15",
+      };
+    if (hour < 17)
+      return {
+        label: "Afternoon",
+        Icon: Sun,
+        tint: "from-amber-200/10 via-transparent to-secondary/15",
+      };
     return { label: "Dusk", Icon: Cloud, tint: "from-rose-400/15 via-transparent to-primary/25" };
   }, [hour]);
 
   const triggerCare = (
-    e: React.MouseEvent<HTMLButtonElement>,
+    e: React.MouseEvent<HTMLAnchorElement>,
     xp: number,
     label: string,
+    actionId: string,
   ) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const id = Date.now() + Math.random();
     setBursts((b) => [...b, { id, x: rect.left + rect.width / 2, y: rect.top, xp, label }]);
     setTimeout(() => setBursts((b) => b.filter((x) => x.id !== id)), 1300);
+    gardenApi
+      .care(actionId)
+      .then(setGarden)
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Could not tend garden"));
   };
 
   return (
@@ -130,7 +188,9 @@ function Garden() {
                 className="h-full w-full"
               />
             </div>
-            <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${timeOfDay.tint}`} />
+            <div
+              className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${timeOfDay.tint}`}
+            />
             <div className="pointer-events-none absolute right-5 top-4 flex items-center gap-1.5 rounded-full glass px-2.5 py-1 text-[10px] uppercase tracking-wider">
               <timeOfDay.Icon className="h-3 w-3 text-secondary" />
               <span className="text-muted-foreground">{timeOfDay.label}</span>
@@ -164,7 +224,7 @@ function Garden() {
           <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-2 px-4">
             <Sparkles className="h-3.5 w-3.5 text-secondary shrink-0" />
             <p className="text-xs text-muted-foreground text-center italic line-clamp-1">
-              "{gardenStages.find((s) => s.key === previewStage)?.lunaWhisper}"
+              "{lunaNote}"
             </p>
           </div>
         </div>
@@ -199,7 +259,14 @@ function Garden() {
           <div className="relative flex items-center gap-4">
             <div className="relative flex h-20 w-20 items-center justify-center">
               <svg viewBox="0 0 36 36" className="absolute inset-0 h-full w-full -rotate-90">
-                <circle cx="18" cy="18" r="15.9" fill="none" stroke="oklch(1 0 0 / 0.08)" strokeWidth="2.5" />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.9"
+                  fill="none"
+                  stroke="oklch(1 0 0 / 0.08)"
+                  strokeWidth="2.5"
+                />
                 <circle
                   cx="18"
                   cy="18"
@@ -284,14 +351,20 @@ function Garden() {
                     </button>
                     <div className={`flex-1 rounded-2xl px-3 py-2 ${isCurrent ? "glass" : ""}`}>
                       <div className="flex items-center justify-between">
-                        <p className={`text-sm font-semibold ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+                        <p
+                          className={`text-sm font-semibold ${reached ? "text-foreground" : "text-muted-foreground"}`}
+                        >
                           {s.title}
                         </p>
-                        <span className="text-[10px] text-muted-foreground">{s.xp.toLocaleString()} XP</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {s.xp.toLocaleString()} XP
+                        </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground">{s.reward}</p>
                       {isCurrent && (
-                        <p className="mt-1 text-[10px] uppercase tracking-wider text-secondary">You are here · tap any stage to preview</p>
+                        <p className="mt-1 text-[10px] uppercase tracking-wider text-secondary">
+                          You are here · tap any stage to preview
+                        </p>
                       )}
                     </div>
                   </li>
@@ -306,13 +379,16 @@ function Garden() {
       <section className="px-5 pt-6">
         <div className="mb-3 flex items-end justify-between">
           <h3 className="text-base font-semibold">Growth Timeline</h3>
-          <span className="text-[10px] text-muted-foreground">{growthTimeline.length} milestones</span>
+          <span className="text-[10px] text-muted-foreground">
+            {growthTimeline.length} milestones
+          </span>
         </div>
         <div className="glass-strong rounded-3xl p-4">
           <ol className="relative space-y-4 pl-5">
             <span className="absolute left-1.5 top-1 bottom-1 w-px bg-gradient-to-b from-secondary/70 via-primary/40 to-white/5" />
             {growthTimeline.map((m) => {
-              const s = gardenStages.find((g) => g.key === m.stage)!;
+              const s = gardenStages.find((g) => g.key === m.stage);
+              if (!s) return null;
               return (
                 <li key={m.id} className="relative">
                   <span className="absolute -left-[18px] top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-secondary ring-4 ring-secondary/20" />
@@ -324,10 +400,11 @@ function Garden() {
                     <span className="text-[10px] text-muted-foreground">{m.daysAgo}</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground">{m.date}</p>
-                  <div className="mt-2 flex gap-2 rounded-2xl glass p-2.5">
+                  <div className="mt-2 flex min-w-0 gap-2 rounded-2xl glass p-2.5">
                     <LunaAvatar mood={STAGE_MOOD[m.stage]} size="sm" />
-                    <p className="text-[12px] italic text-foreground/90">
-                      <span className="text-secondary not-italic">{luna.name}:</span> "{m.lunaMessage}"
+                    <p className="min-w-0 text-[12px] italic text-foreground/90">
+                      <span className="text-secondary not-italic">{luna.name}:</span> "
+                      {m.lunaMessage}"
                     </p>
                   </div>
                 </li>
@@ -342,7 +419,9 @@ function Garden() {
                     <span className="mr-1.5">{s.emoji}</span>
                     {s.title} · coming
                   </p>
-                  <span className="text-[10px] text-muted-foreground">{s.xp.toLocaleString()} XP</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {s.xp.toLocaleString()} XP
+                  </span>
                 </div>
                 <p className="text-[11px] text-muted-foreground/80 italic">"{s.lunaWhisper}"</p>
               </li>
@@ -356,18 +435,17 @@ function Garden() {
         <div className="flex items-end justify-between">
           <div>
             <h3 className="text-base font-semibold">Garden Care</h3>
-            <p className="text-xs text-muted-foreground">Effects tuned for your {currentStage.title}</p>
+            <p className="text-xs text-muted-foreground">
+              Effects tuned for your {currentStage.title}
+            </p>
           </div>
-          <span className="text-[10px] uppercase tracking-wider text-secondary">{currentStage.emoji} {currentStage.title}</span>
+          <span className="text-[10px] uppercase tracking-wider text-secondary">
+            {currentStage.emoji} {currentStage.title}
+          </span>
         </div>
         <div className="mt-3 grid grid-cols-5 gap-2">
           {careActions.map((a) => (
-            <CareTile
-              key={a.id}
-              action={a}
-              stage={currentStage.key}
-              onTap={triggerCare}
-            />
+            <CareTile key={a.id} action={a} stage={currentStage.key} onTap={triggerCare} />
           ))}
         </div>
         <p className="mt-2 text-[10px] text-muted-foreground text-center">
@@ -392,7 +470,9 @@ function Garden() {
                   c.owned ? "glass" : "bg-white/[0.02] border border-dashed border-white/5"
                 }`}
               >
-                <span className={`text-2xl ${c.owned ? "" : "grayscale opacity-30"}`}>{c.emoji}</span>
+                <span className={`text-2xl ${c.owned ? "" : "grayscale opacity-30"}`}>
+                  {c.emoji}
+                </span>
                 <span
                   className={`text-[10px] text-center ${
                     c.owned ? "text-foreground" : "text-muted-foreground"
@@ -437,38 +517,41 @@ function CareTile({
 }: {
   action: CareAction;
   stage: GardenStageKey;
-  onTap: (e: React.MouseEvent<HTMLButtonElement>, xp: number, label: string) => void;
+  onTap: (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    xp: number,
+    label: string,
+    actionId: string,
+  ) => void;
 }) {
   const [ripples, setRipples] = useState<number[]>([]);
   const Icon = ICON_MAP[action.icon];
   const xp = action.xpByStage[stage];
   const effect = action.effectByStage[stage];
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const id = Date.now();
     setRipples((r) => [...r, id]);
     setTimeout(() => setRipples((r) => r.filter((x) => x !== id)), 700);
-    onTap(e, xp, effect);
+    onTap(e, xp, effect, action.id);
   };
 
   return (
-    <Link to={action.to} className="block">
-      <button
-        type="button"
-        onClick={handleClick}
-        title={effect}
-        className="relative w-full overflow-hidden glass flex flex-col items-center gap-1.5 rounded-2xl p-3 transition-transform active:scale-95"
-      >
-        {ripples.map((id) => (
-          <span
-            key={id}
-            className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/40 animate-ripple"
-          />
-        ))}
-        <Icon className="relative h-5 w-5 text-primary" />
-        <span className="relative text-[10px] font-medium">{action.label}</span>
-        <span className="relative text-[9px] text-secondary">+{xp}</span>
-      </button>
+    <Link
+      to={action.to}
+      onClick={handleClick}
+      title={effect}
+      className="relative flex min-w-0 w-full flex-col items-center gap-1.5 overflow-hidden rounded-2xl glass p-3 transition-transform active:scale-95"
+    >
+      {ripples.map((id) => (
+        <span
+          key={id}
+          className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/40 animate-ripple"
+        />
+      ))}
+      <Icon className="relative h-5 w-5 text-primary" />
+      <span className="relative text-[10px] font-medium">{action.label}</span>
+      <span className="relative text-[9px] text-secondary">+{xp}</span>
     </Link>
   );
 }

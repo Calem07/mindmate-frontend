@@ -1,9 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, ChevronRight, Droplet, Brain, MessageCircle, Sparkles, BookOpen, Moon, Sun, Sunrise, Leaf, Lock } from "lucide-react";
+import { Bell, ChevronRight, Droplet, Brain, MessageCircle, Sparkles, BookOpen, Moon, Sun, Sunrise, Leaf, Lock, CheckCircle2, Target, Heart, type LucideIcon } from "lucide-react";
 import tree from "@/assets/tree.jpg";
 import { Shell } from "@/components/Shell";
 import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
+import { useAuth } from "@/components/AuthProvider";
+import { checkInsApi } from "@/lib/api/checkIns";
+import { focusApi } from "@/lib/api/focus";
+import { gardenApi, type Garden as GardenData, type GardenStage } from "@/lib/api/garden";
+import { goalsApi } from "@/lib/api/goals";
+import { habitsApi, type Habit } from "@/lib/api/habits";
+import { profileApi, type Profile } from "@/lib/api/profile";
+import { lunaApi } from "@/lib/api/luna";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -16,20 +24,164 @@ export const Route = createFileRoute("/")({
 });
 
 function computeTimeContext(h: number) {
-  if (h < 5) return { greeting: "Still up,", icon: Moon, whisper: "The night is quiet. Luna is here with you." };
-  if (h < 12) return { greeting: "Good morning,", icon: Sunrise, whisper: "A new day, a new little step. Let's grow together." };
-  if (h < 17) return { greeting: "Good afternoon,", icon: Sun, whisper: "How's your heart doing right now? Luna's been thinking of you." };
-  if (h < 21) return { greeting: "Good evening,", icon: Moon, whisper: "Soft hours. Let's slow down and care for you." };
-  return { greeting: "Good night,", icon: Moon, whisper: "Today mattered. Luna is so proud of you." };
+  if (h < 5) return { greeting: "Still up,", icon: Moon };
+  if (h < 12) return { greeting: "Good morning,", icon: Sunrise };
+  if (h < 17) return { greeting: "Good afternoon,", icon: Sun };
+  if (h < 21) return { greeting: "Good evening,", icon: Moon };
+  return { greeting: "Good night,", icon: Moon };
+}
+
+const habitIconMap: Record<string, LucideIcon> = {
+  BookOpen,
+  Brain,
+  CheckCircle2,
+  Droplet,
+  Heart,
+  MessageCircle,
+  Sparkles,
+  Target,
+};
+
+type TodayItem = {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  done?: boolean;
+  progress?: number;
+  color: "cyan" | "purple" | "teal";
+  xp?: number;
+};
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function deriveStage(xp: number, gardenStages: GardenStage[]) {
+  if (gardenStages.length === 0) return { stage: null, next: null, progress: 0 };
+  const idx = gardenStages.reduce((acc, s, i) => (xp >= s.xp ? i : acc), 0);
+  const stage = gardenStages[idx];
+  const next = gardenStages[idx + 1] ?? stage;
+  const progress = next === stage ? 100 : Math.min(100, Math.max(0, ((xp - stage.xp) / (next.xp - stage.xp)) * 100));
+  return { stage, next, progress };
+}
+
+function bondLabel(bondPct: number) {
+  if (bondPct >= 80) return "Bonded";
+  if (bondPct >= 55) return "Growing";
+  if (bondPct >= 25) return "Warming";
+  return "New";
+}
+
+function lunaMoodLabel(bondPct: number) {
+  if (bondPct >= 80) return "purring softly";
+  if (bondPct >= 55) return "settling in";
+  if (bondPct >= 25) return "curious";
+  return "getting to know you";
+}
+
+function habitToTodayItem(habit: Habit, index: number): TodayItem {
+  const done = habit.status === "done";
+  return {
+    id: `habit-${habit.id}`,
+    icon: habitIconMap[habit.icon] ?? CheckCircle2,
+    title: habit.name,
+    subtitle: done ? `${habit.streak} day streak` : "Tiny ritual for today",
+    done,
+    progress: done ? undefined : habit.status === "in_progress" ? 50 : 0,
+    color: index % 2 === 0 ? "cyan" : "teal",
+    xp: habit.xp,
+  };
 }
 
 function Home() {
   // Only render the time-dependent icon/greeting after mount to avoid SSR hydration mismatch.
   const [hour, setHour] = useState<number | null>(null);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [garden, setGarden] = useState<GardenData | null>(null);
+  const [todayItems, setTodayItems] = useState<TodayItem[]>([]);
+  const [lunaNote, setLunaNote] = useState("");
+  const [heroWhisper, setHeroWhisper] = useState("");
   useEffect(() => setHour(new Date().getHours()), []);
-  const ctx = hour === null ? { greeting: "Hello,", icon: Moon, whisper: "Luna is here with you." } : computeTimeContext(hour);
-  const { greeting, icon: TimeIcon, whisper } = ctx;
+  useEffect(() => {
+    lunaApi.note("home").then((note) => setLunaNote(note.content)).catch(() => setLunaNote(""));
+    lunaApi.note("home-hero").then((note) => setHeroWhisper(note.content)).catch(() => setHeroWhisper(""));
+  }, []);
+  useEffect(() => {
+    const today = todayIso();
+    void Promise.allSettled([
+      profileApi.get().then(setProfile),
+      gardenApi.get().then(setGarden),
+      Promise.all([
+        checkInsApi.today().catch(() => null),
+        habitsApi.today().catch(() => []),
+        goalsApi.list("ACTIVE", 1).catch(() => []),
+        focusApi.sessions({ from: today, to: today, limit: 10 }).catch(() => []),
+        gardenApi.get().catch(() => null),
+      ]).then(([checkIn, habits, goals, focusSessions, gardenSnapshot]) => {
+        const reward = (actionId: string) => gardenSnapshot?.careActions.find((action) => action.id === actionId)?.xpByStage[gardenSnapshot.currentStage];
+        const completedFocus = focusSessions
+          .filter((session) => session.completed)
+          .reduce((sum, session) => sum + (session.duration ?? 0), 0);
+        const items: TodayItem[] = [
+          {
+            id: "check-in",
+            icon: MessageCircle,
+            title: "Check in with Luna",
+            subtitle: "A soft moment to feel",
+            done: Boolean(checkIn),
+            progress: checkIn ? undefined : 0,
+            color: "purple",
+            xp: reward("checkin"),
+          },
+          ...habits.slice(0, 2).map(habitToTodayItem),
+        ];
+
+        if (goals[0]) {
+          items.push({
+            id: `goal-${goals[0].id}`,
+            icon: Target,
+            title: goals[0].name,
+            subtitle: goals[0].category || "Goal in progress",
+            done: goals[0].status === "COMPLETED" || goals[0].pct >= 100,
+            progress: Math.max(0, Math.min(100, goals[0].pct ?? 0)),
+            color: "teal",
+            xp: reward("goal"),
+          });
+        }
+
+        items.push({
+          id: "focus",
+          icon: BookOpen,
+          title: "Study with focus",
+          subtitle: completedFocus > 0 ? `${completedFocus} min today` : "One quiet block",
+          done: completedFocus > 0,
+          progress: completedFocus > 0 ? undefined : 0,
+          color: "purple",
+          xp: reward("focus"),
+        });
+
+        setTodayItems(items.slice(0, 4));
+      }),
+    ]);
+  }, []);
+  const ctx = hour === null ? { greeting: "Hello,", icon: Moon } : computeTimeContext(hour);
+  const { greeting, icon: TimeIcon } = ctx;
   const ambientMood = useAmbientLunaMood();
+  const displayName =
+    profile?.displayName ||
+    (user?.user_metadata?.display_name as string | undefined) ||
+    user?.email?.split("@")[0] ||
+    "Friend";
+  const level = garden?.level ?? profile?.level ?? 1;
+  const xp = garden?.xp ?? profile?.xp ?? 0;
+  const xpToNext = profile?.xpToNext && profile.xpToNext > xp ? profile.xpToNext : undefined;
+  const gardenStage = deriveStage(xp, garden?.gardenStages ?? []);
+  const nextXp = xpToNext ?? (gardenStage.next?.xp || Math.max(xp, 1));
+  const xpProgress = nextXp > xp ? Math.min(100, Math.round((xp / nextXp) * 100)) : Math.round(gardenStage.progress);
+  const bondPct = profile?.bondPct ?? 0;
+  const completedToday = todayItems.filter((item) => item.done).length;
   return (
     <Shell>
       <header className="flex items-start justify-between px-5 pt-6">
@@ -38,7 +190,7 @@ function Home() {
             {hour === null ? <span className="h-3.5 w-3.5" /> : <TimeIcon className="h-3.5 w-3.5" />}
             <span>{greeting}</span>
           </div>
-          <h1 className="mt-0.5 text-2xl font-bold tracking-tight">Calem <span className="text-xl">💜</span></h1>
+          <h1 className="mt-0.5 text-2xl font-bold tracking-tight">{displayName} <span className="text-xl">💜</span></h1>
         </div>
         <Link to="/check-in" className="glass relative flex h-11 w-11 items-center justify-center rounded-full" aria-label="Notifications">
           <Bell className="h-5 w-5" />
@@ -66,17 +218,17 @@ function Home() {
             <div className="flex-1 pt-1">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold">Luna</h2>
-                <span className="rounded-full bg-purple/20 px-2 py-0.5 text-[10px] font-semibold text-purple">LV 4 · Bonded</span>
+                <span className="rounded-full bg-purple/20 px-2 py-0.5 text-[10px] font-semibold text-purple">LV {level} · {bondLabel(bondPct)}</span>
               </div>
-              <p className="text-xs text-muted-foreground">82% Bond · purring softly</p>
+              <p className="text-xs text-muted-foreground">{bondPct}% Bond · {lunaMoodLabel(bondPct)}</p>
               <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                <div className="h-full w-[62%] gradient-primary rounded-full" />
+                <div className="h-full gradient-primary rounded-full" style={{ width: `${xpProgress}%` }} />
               </div>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">1,250 / 2,000 XP to next bond</p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">{xp.toLocaleString()} / {nextXp.toLocaleString()} XP to next bond</p>
             </div>
           </div>
           <p className="relative mt-4 text-sm leading-relaxed text-foreground/90 italic">
-            "{whisper}"
+            "{heroWhisper}"
           </p>
           <div className="relative mt-4 flex gap-2">
             <Link to="/growth" className="flex-1 rounded-2xl gradient-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-purple/30">
@@ -97,13 +249,12 @@ function Home() {
             <h3 className="text-base font-semibold">Today with Luna</h3>
             <p className="text-[11px] text-muted-foreground">Each step waters your garden 🌱</p>
           </div>
-          <span className="text-xs text-muted-foreground">2 of 4 done</span>
+          <span className="text-xs text-muted-foreground">{completedToday} of {todayItems.length} done</span>
         </div>
         <div className="space-y-2.5">
-          <FocusItem icon={MessageCircle} title="Check in with Luna" subtitle="A soft moment to feel" done color="purple" xp={20} />
-          <FocusItem icon={Droplet} title="Hydrate your garden" subtitle="5 of 8 glasses" progress={62} color="cyan" xp={15} />
-          <FocusItem icon={Brain} title="Calm your mind" subtitle="10 min of stillness" done color="teal" xp={25} />
-          <FocusItem icon={BookOpen} title="Study with focus" subtitle="One quiet block" progress={0} color="purple" xp={30} />
+          {todayItems.map((item) => (
+            <FocusItem key={item.id} {...item} />
+          ))}
         </div>
         <Link to="/growth" className="mt-2.5 flex w-full items-center justify-between rounded-2xl glass px-4 py-3 text-sm">
           <span className="text-muted-foreground">See all today's care</span>
@@ -118,7 +269,7 @@ function Home() {
             <div className="flex items-center justify-between px-5 pt-4">
               <div>
                 <h3 className="text-base font-semibold">Growth Garden</h3>
-                <p className="text-[11px] text-muted-foreground">Level 4 · Young Sprout reaching for the light</p>
+                <p className="text-[11px] text-muted-foreground">Level {level} · {gardenStage.stage?.title ?? "Seed"}</p>
               </div>
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </div>
@@ -162,9 +313,9 @@ function Home() {
                     </div>
                     <p className="text-sm font-semibold">First Leaf will bloom</p>
                     <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full w-[62%] gradient-primary rounded-full" />
+                      <div className="h-full gradient-primary rounded-full" style={{ width: `${xpProgress}%` }} />
                     </div>
-                    <p className="mt-1 text-[10px] text-muted-foreground">750 XP to go · about 3 check-ins away</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">{Math.max(0, nextXp - xp).toLocaleString()} XP to go</p>
                   </div>
                 </div>
               </div>
@@ -182,7 +333,7 @@ function Home() {
             <span className="font-semibold uppercase tracking-wider">A note from Luna</span>
           </div>
           <p className="relative mt-3 text-base leading-relaxed">
-            "You don't have to be everything today. Just be here, with me, for a moment."
+            {lunaNote}
           </p>
           <p className="relative mt-2 text-xs text-muted-foreground">— Luna, curled up beside you 🌙</p>
         </div>
@@ -192,7 +343,7 @@ function Home() {
 }
 
 function FocusItem({ icon: Icon, title, subtitle, done, progress, color, xp }: {
-  icon: typeof Droplet; title: string; subtitle: string; done?: boolean; progress?: number; color: "cyan" | "purple" | "teal"; xp?: number;
+  icon: LucideIcon; title: string; subtitle: string; done?: boolean; progress?: number; color: "cyan" | "purple" | "teal"; xp?: number;
 }) {
   const colorMap = { cyan: "text-primary bg-primary/15", purple: "text-purple bg-purple/15", teal: "text-secondary bg-secondary/15" };
   return (

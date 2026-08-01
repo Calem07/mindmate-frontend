@@ -1,18 +1,60 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { EmptyState } from "@/components/StateViews";
-import { badges, challenges } from "@/data/mock";
-import { Trophy, Target } from "lucide-react";
+import { badgesApi, type Badge } from "@/lib/api/badges";
+import { challengesApi, type Challenge } from "@/lib/api/challenges";
+import {
+  Brain,
+  Flower2,
+  Heart,
+  Hourglass,
+  Leaf,
+  Sparkles,
+  Sunrise,
+  Target,
+  TreePine,
+  Trophy,
+  type LucideIcon,
+} from "lucide-react";
+
+const badgeIconMap: Record<string, LucideIcon> = {
+  Brain,
+  Flower2,
+  Heart,
+  Hourglass,
+  Leaf,
+  Sparkles,
+  Sunrise,
+  TreePine,
+  Trophy,
+};
 
 export const Route = createFileRoute("/badges")({
-  head: () => ({ meta: [{ title: "Badges & Challenges — MindMate" }, { name: "description", content: "Earned moments and active challenges." }] }),
+  head: () => ({
+    meta: [
+      { title: "Badges & Challenges — MindMate" },
+      { name: "description", content: "Earned moments and active challenges." },
+    ],
+  }),
   component: Badges,
 });
 
 function Badges() {
   const [tab, setTab] = useState<"Badges" | "Challenges">("Badges");
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const earned = badges.filter((b) => b.earned).length;
+
+  useEffect(() => {
+    Promise.all([badgesApi.list(), challengesApi.list()])
+      .then(([badgeRows, challengeRows]) => {
+        setBadges(badgeRows);
+        setChallenges(challengeRows);
+      })
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Could not load badges"));
+  }, []);
 
   return (
     <Shell>
@@ -26,11 +68,16 @@ function Badges() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Collected</p>
-              <p className="text-xl font-bold"><span className="text-gradient">{earned}</span> / {badges.length} badges</p>
+              <p className="text-xl font-bold">
+                <span className="text-gradient">{earned}</span> / {badges.length} badges
+              </p>
             </div>
           </div>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-            <div className="h-full gradient-primary rounded-full" style={{ width: `${(earned / badges.length) * 100}%` }} />
+            <div
+              className="h-full gradient-primary rounded-full"
+              style={{ width: `${badges.length ? (earned / badges.length) * 100 : 0}%` }}
+            />
           </div>
         </div>
       </section>
@@ -38,7 +85,13 @@ function Badges() {
       <div className="px-5 pt-5">
         <div className="glass-strong flex rounded-full p-1">
           {(["Badges", "Challenges"] as const).map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-full px-3 py-1.5 text-xs font-semibold ${tab === t ? "gradient-primary text-white" : "text-muted-foreground"}`}>{t}</button>
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 rounded-full px-3 py-1.5 text-xs font-semibold ${tab === t ? "gradient-primary text-white" : "text-muted-foreground"}`}
+            >
+              {t}
+            </button>
           ))}
         </div>
       </div>
@@ -46,12 +99,19 @@ function Badges() {
       {tab === "Badges" ? (
         <section className="px-5 pt-5">
           {badges.length === 0 ? (
-            <EmptyState icon={Trophy} title="No badges yet" body="Small moments earn them — tend a habit or check in today." />
+            <EmptyState
+              icon={Trophy}
+              title="No badges yet"
+              body="Small moments earn them — tend a habit or check in today."
+            />
           ) : (
             <div className="grid grid-cols-3 gap-3">
               {badges.map((b) => (
-                <div key={b.id} className={`glass flex flex-col items-center gap-1 rounded-2xl p-3 text-center ${b.earned ? "" : "opacity-50 grayscale"}`}>
-                  <span className="text-3xl">{b.icon}</span>
+                <div
+                  key={b.id}
+                  className={`glass flex flex-col items-center gap-1 rounded-2xl p-3 text-center ${b.earned ? "" : "opacity-50 grayscale"}`}
+                >
+                  <BadgeIcon icon={b.icon} />
                   <p className="text-[11px] font-semibold">{b.name}</p>
                   <p className="text-[9px] leading-tight text-muted-foreground">{b.desc}</p>
                 </div>
@@ -62,7 +122,11 @@ function Badges() {
       ) : (
         <section className="space-y-3 px-5 pt-5">
           {challenges.length === 0 ? (
-            <EmptyState icon={Target} title="No active challenges" body="New quests appear as you grow. Check back soon." />
+            <EmptyState
+              icon={Target}
+              title="No active challenges"
+              body="New quests appear as you grow. Check back soon."
+            />
           ) : (
             challenges.map((c) => (
               <div key={c.id} className="glass-strong rounded-3xl p-4">
@@ -71,10 +135,15 @@ function Badges() {
                     <p className="truncate text-sm font-semibold">{c.name}</p>
                     <p className="text-[11px] text-muted-foreground">{c.reward}</p>
                   </div>
-                  <span className="shrink-0 text-sm font-bold text-gradient">{c.progress}/{c.total}</span>
+                  <span className="shrink-0 text-sm font-bold text-gradient">
+                    {c.progress}/{c.total}
+                  </span>
                 </div>
                 <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full gradient-primary rounded-full" style={{ width: `${(c.progress / c.total) * 100}%` }} />
+                  <div
+                    className="h-full gradient-primary rounded-full"
+                    style={{ width: `${(c.progress / c.total) * 100}%` }}
+                  />
                 </div>
               </div>
             ))
@@ -83,4 +152,9 @@ function Badges() {
       )}
     </Shell>
   );
+}
+
+function BadgeIcon({ icon }: { icon: string }) {
+  const Icon = badgeIconMap[icon] ?? Trophy;
+  return <Icon className="h-7 w-7 text-purple" />;
 }

@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, Lock, Shield, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout, Field } from "@/components/AuthLayout";
+import { authApi } from "@/lib/api/auth";
 
 export const Route = createFileRoute("/admin-login")({
   head: () => ({
@@ -25,24 +25,7 @@ function AdminLoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      const userId = data.user?.id;
-      if (!userId) throw new Error("No user returned");
-
-      // Verify admin role via user_roles table
-      const { data: roles, error: roleErr } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (roleErr) throw roleErr;
-      if (!roles) {
-        await supabase.auth.signOut();
-        throw new Error("This account does not have admin access.");
-      }
+      await authApi.adminLogin({ email, password });
 
       toast.success("Welcome, admin 🛡️");
       { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }

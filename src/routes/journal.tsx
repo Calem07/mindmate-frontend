@@ -1,12 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { EmptyState, SuccessState } from "@/components/StateViews";
-import { journalEntries, journalPrompts, gratitudeEntries, moods } from "@/data/mock";
+import { moods } from "@/lib/api/checkIns";
+import { gratitudeApi, type GratitudeEntry } from "@/lib/api/gratitude";
+import { journalApi, type JournalEntry } from "@/lib/api/journal";
 import { Plus, Sparkles, Heart, BookOpen } from "lucide-react";
 
 export const Route = createFileRoute("/journal")({
-  head: () => ({ meta: [{ title: "Journal & Gratitude — MindMate" }, { name: "description", content: "A safe place for your thoughts and what you're thankful for." }] }),
+  head: () => ({
+    meta: [
+      { title: "Journal & Gratitude — MindMate" },
+      {
+        name: "description",
+        content: "A safe place for your thoughts and what you're thankful for.",
+      },
+    ],
+  }),
   component: Journal,
 });
 
@@ -15,23 +26,67 @@ function Journal() {
   const [text, setText] = useState("");
   const [gratitude, setGratitude] = useState(["", "", ""]);
   const [saved, setSaved] = useState<null | string>(null);
-  const prompt = journalPrompts[new Date().getDate() % journalPrompts.length];
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [gratitudeEntries, setGratitudeEntries] = useState<GratitudeEntry[]>([]);
+  const [journalPrompts, setJournalPrompts] = useState<string[]>([]);
+  const prompt =
+    journalPrompts[new Date().getDate() % Math.max(journalPrompts.length, 1)] ??
+    "What is asking for your attention today?";
 
-  const save = () => {
-    setSaved(tab === "Journal" ? "Entry sealed for today" : "Gratitude noted 💜");
-    setText("");
-    setGratitude(["", "", ""]);
-    setTimeout(() => setSaved(null), 2400);
+  useEffect(() => {
+    Promise.all([
+      journalApi.list({ limit: 10 }),
+      gratitudeApi.list({ limit: 10 }),
+      journalApi.prompts(),
+    ])
+      .then(([entries, gratitudeList, prompts]) => {
+        setJournalEntries(entries);
+        setGratitudeEntries(gratitudeList);
+        setJournalPrompts(prompts);
+      })
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Could not load journal"));
+  }, []);
+
+  const save = async () => {
+    try {
+      if (tab === "Journal") {
+        const entry = await journalApi.create({ title: "Journal entry", content: text.trim() });
+        setJournalEntries((entries) => [entry, ...entries]);
+        setSaved("Entry sealed for today");
+        setText("");
+      } else {
+        const items = gratitude.map((g) => g.trim()).filter(Boolean);
+        const entry = await gratitudeApi.create({ items });
+        setGratitudeEntries((entries) => [entry, ...entries]);
+        setSaved("Gratitude noted 💜");
+        setGratitude(["", "", ""]);
+      }
+      setTimeout(() => setSaved(null), 2400);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save");
+    }
   };
 
   return (
     <Shell>
-      <ScreenHeader title="Journal" back right={<button className="glass flex h-9 w-9 items-center justify-center rounded-full"><Plus className="h-4 w-4" /></button>} />
+      <ScreenHeader
+        title="Journal"
+        back
+        right={
+          <button className="glass flex h-9 w-9 items-center justify-center rounded-full">
+            <Plus className="h-4 w-4" />
+          </button>
+        }
+      />
 
       <div className="px-5">
         <div className="glass-strong flex rounded-full p-1">
           {(["Journal", "Gratitude"] as const).map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-full px-3 py-1.5 text-xs font-semibold ${tab === t ? "gradient-primary text-white" : "text-muted-foreground"}`}>
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 rounded-full px-3 py-1.5 text-xs font-semibold ${tab === t ? "gradient-primary text-white" : "text-muted-foreground"}`}
+            >
               {t}
             </button>
           ))}
@@ -56,13 +111,21 @@ function Journal() {
               placeholder="Write what's on your mind…"
               className="h-48 w-full resize-none rounded-3xl glass-strong p-4 text-sm outline-none placeholder:text-muted-foreground"
             />
-            <button onClick={save} disabled={!text.trim()} className="w-full rounded-2xl gradient-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple/30 disabled:opacity-40">
+            <button
+              onClick={save}
+              disabled={!text.trim()}
+              className="w-full rounded-2xl gradient-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple/30 disabled:opacity-40"
+            >
               Save entry
             </button>
 
             <h3 className="pt-2 text-sm font-semibold">Recent entries</h3>
             {journalEntries.length === 0 ? (
-              <EmptyState icon={BookOpen} title="Your journal is quiet" body="Start with one sentence. That's enough." />
+              <EmptyState
+                icon={BookOpen}
+                title="Your journal is quiet"
+                body="Start with one sentence. That's enough."
+              />
             ) : (
               journalEntries.map((e) => {
                 const m = moods.find((x) => x.id === e.mood);
@@ -73,7 +136,9 @@ function Journal() {
                       <span className="text-lg">{m?.emoji}</span>
                     </div>
                     <p className="mt-1 text-[11px] text-muted-foreground">{e.date}</p>
-                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{e.excerpt}</p>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      {e.excerpt}
+                    </p>
                   </div>
                 );
               })
@@ -87,20 +152,28 @@ function Journal() {
                 <Heart className="h-3.5 w-3.5" />
                 <span className="font-semibold uppercase tracking-wider">Three good things</span>
               </div>
-              <p className="relative mt-2 text-xs text-muted-foreground">Name three things — tiny is perfect.</p>
+              <p className="relative mt-2 text-xs text-muted-foreground">
+                Name three things — tiny is perfect.
+              </p>
               <div className="relative mt-4 space-y-2">
                 {gratitude.map((g, i) => (
                   <input
                     key={i}
                     value={g}
-                    onChange={(e) => setGratitude((arr) => arr.map((x, ix) => (ix === i ? e.target.value : x)))}
+                    onChange={(e) =>
+                      setGratitude((arr) => arr.map((x, ix) => (ix === i ? e.target.value : x)))
+                    }
                     placeholder={`${i + 1}. Something good…`}
                     className="w-full rounded-2xl glass px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
                   />
                 ))}
               </div>
             </div>
-            <button onClick={save} disabled={!gratitude.some((g) => g.trim())} className="w-full rounded-2xl gradient-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple/30 disabled:opacity-40">
+            <button
+              onClick={save}
+              disabled={!gratitude.some((g) => g.trim())}
+              className="w-full rounded-2xl gradient-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple/30 disabled:opacity-40"
+            >
               Save gratitude
             </button>
 

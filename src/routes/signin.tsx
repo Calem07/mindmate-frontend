@@ -2,10 +2,9 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/components/AuthProvider";
 import { AuthLayout, Field, GoogleIcon } from "@/components/AuthLayout";
+import { authApi } from "@/lib/api/auth";
 
 export const Route = createFileRoute("/signin")({
   head: () => ({
@@ -14,44 +13,33 @@ export const Route = createFileRoute("/signin")({
       { name: "description", content: "Welcome back. Luna missed you." },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" && s.next.startsWith("/") ? s.next : undefined,
-  }),
   component: SignInPage,
 });
-
-function safeNext(next: string | undefined): string {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
-}
 
 function SignInPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const { next } = Route.useSearch();
-  const target = safeNext(next);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const go = () => {
-    sessionStorage.setItem("mindmate-splash-shown", "1");
-    if (target === "/") navigate({ to: "/" });
-    else window.location.assign(target);
-  };
-
   useEffect(() => {
-    if (!loading && user) go();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, loading]);
+    if (!loading && user) {
+      sessionStorage.setItem("mindmate-splash-shown", "1");
+      navigate({ to: "/" });
+    }
+  }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      await authApi.login({ email, password });
       toast.success("Welcome back 💜");
-      go();
+      {
+        sessionStorage.setItem("mindmate-splash-shown", "1");
+        navigate({ to: "/" });
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign in failed");
     } finally {
@@ -61,23 +49,8 @@ function SignInPage() {
 
   const handleGoogle = async () => {
     setBusy(true);
-    try {
-      const redirectUri =
-        target === "/"
-          ? window.location.origin
-          : `${window.location.origin}/signin?next=${encodeURIComponent(target)}`;
-      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: redirectUri });
-      if (result.error) {
-        toast.error(result.error.message ?? "Google sign-in failed");
-        setBusy(false);
-        return;
-      }
-      if (result.redirected) return;
-      go();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Google sign-in failed");
-      setBusy(false);
-    }
+    toast.error("Google sign-in failed");
+    setBusy(false);
   };
 
   return (
@@ -87,7 +60,9 @@ function SignInPage() {
       footer={
         <>
           New here?{" "}
-          <Link to="/signup" className="font-semibold text-primary">Create an account</Link>
+          <Link to="/signup" className="font-semibold text-primary">
+            Create an account
+          </Link>
         </>
       }
     >
@@ -125,7 +100,10 @@ function SignInPage() {
           </button>
 
           <div className="pt-1 text-center">
-            <Link to="/forgot-password" className="text-xs font-medium text-muted-foreground hover:text-primary">
+            <Link
+              to="/forgot-password"
+              className="text-xs font-medium text-muted-foreground hover:text-primary"
+            >
               Forgot password?
             </Link>
           </div>
@@ -147,7 +125,9 @@ function SignInPage() {
         </button>
 
         <div className="mt-4 text-center text-[11px] text-muted-foreground">
-          <Link to="/admin-login" className="font-semibold">Admin login →</Link>
+          <Link to="/admin-login" className="font-semibold">
+            Admin login →
+          </Link>
         </div>
       </div>
     </AuthLayout>

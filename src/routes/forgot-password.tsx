@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, ArrowRight, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout, Field } from "@/components/AuthLayout";
+import { authApi } from "@/lib/api/auth";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -24,10 +24,10 @@ function ForgotPasswordPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      await authApi.forgotPassword({
+        email,
+        resetUrl: `${window.location.origin}/reset-password`,
       });
-      if (error) throw error;
       setSent(true);
       toast.success("Check your email for the reset link 💌");
     } catch (err) {

@@ -52,7 +52,7 @@ export function ErrorState({ title = "Something went sideways", body, onRetry }:
         {body && <p className="mt-1 text-xs text-muted-foreground">{body}</p>}
       </div>
       {onRetry && (
-        <button onClick={onRetry} className="mx-auto rounded-full glass px-4 py-2 text-xs font-semibold">
+        <button onClick={onRetry} className="mx-auto min-h-11 rounded-full glass px-5 py-2 text-xs font-semibold transition duration-200 active:scale-95">
           Try again
         </button>
       )}

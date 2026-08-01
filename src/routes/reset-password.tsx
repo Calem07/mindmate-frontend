@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout, Field } from "@/components/AuthLayout";
+import { authApi } from "@/lib/api/auth";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -23,14 +23,7 @@ function ResetPasswordPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Supabase auto-exchanges the recovery hash into a session on load.
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
-    });
-    return () => sub.subscription.unsubscribe();
+    setReady(Boolean(new URLSearchParams(window.location.search).get("token")));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,10 +34,10 @@ function ResetPasswordPage() {
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      const token = new URLSearchParams(window.location.search).get("token");
+      if (!token) throw new Error("Reset link is missing or invalid");
+      await authApi.resetPassword({ token, password });
       toast.success("Password updated 🎉");
-      await supabase.auth.signOut();
       navigate({ to: "/signin" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not update password");

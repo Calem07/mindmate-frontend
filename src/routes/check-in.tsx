@@ -1,42 +1,83 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { SuccessState } from "@/components/StateViews";
-import { moods, luna } from "@/data/mock";
+import { checkInsApi, moods, type Mood } from "@/lib/api/checkIns";
 import lunaImg from "@/assets/luna.png";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { useLunaMoodTrigger } from "@/components/LunaSystemProvider";
+import { lunaApi } from "@/lib/api/luna";
 
 export const Route = createFileRoute("/check-in")({
-  head: () => ({ meta: [{ title: "Daily Check-In — MindMate" }, { name: "description", content: "Pause, breathe, and share how you feel with Luna." }] }),
+  head: () => ({
+    meta: [
+      { title: "Daily Check-In — MindMate" },
+      { name: "description", content: "Pause, breathe, and share how you feel with Luna." },
+    ],
+  }),
   component: CheckIn,
 });
 
 const energyLabels = ["Drained", "Low", "Steady", "Bright", "Sparkling"];
-const tags = ["Anxious", "Hopeful", "Tired", "Focused", "Lonely", "Grateful", "Stressed", "Calm", "Excited"];
-
+const tags = [
+  "Anxious",
+  "Hopeful",
+  "Tired",
+  "Focused",
+  "Lonely",
+  "Grateful",
+  "Stressed",
+  "Calm",
+  "Excited",
+];
 function CheckIn() {
   const navigate = useNavigate();
   const bumpMood = useLunaMoodTrigger();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [mood, setMood] = useState<string | null>(null);
+  const [mood, setMood] = useState<Mood | null>(null);
   const [energy, setEnergy] = useState(2);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [note, setNote] = useState("");
   const [done, setDone] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [lunaWhisper, setLunaWhisper] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    lunaApi.note("check-in").then((note) => {
+      if (active) setLunaWhisper(note.content);
+    }).catch(() => {
+      if (active) setLunaWhisper("");
+    });
+    return () => { active = false; };
+  }, [step]);
 
   const toggleTag = (t: string) =>
     setSelectedTags((s) => (s.includes(t) ? s.filter((x) => x !== t) : [...s, t]));
 
-  const next = () => {
+  const next = async () => {
     if (step < 4) return setStep((step + 1) as 1 | 2 | 3 | 4);
+    if (!mood || saving) return;
+    setSaving(true);
+    try {
+      await checkInsApi.save({
+        mood,
+        energy: energy + 1,
+        tags: selectedTags.map((tag) => tag.toLowerCase()),
+        note: note.trim() || undefined,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Check-in failed");
+      setSaving(false);
+      return;
+    }
     setDone(true);
     // Luna reacts to the completed check-in — caring if the mood was low, celebrating otherwise.
     const low = mood ? /sad|anx|tired|stress|lonely|drain/i.test(mood) : false;
     bumpMood(low ? "caring" : "celebrate", 12000);
     setTimeout(() => navigate({ to: "/" }), 1400);
   };
-
 
   return (
     <Shell>
@@ -46,7 +87,10 @@ function CheckIn() {
       <div className="px-5">
         <div className="flex gap-1.5">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? "gradient-primary" : "bg-white/10"}`} />
+            <div
+              key={i}
+              className={`h-1.5 flex-1 rounded-full ${i <= step ? "gradient-primary" : "bg-white/10"}`}
+            />
           ))}
         </div>
       </div>
@@ -55,7 +99,13 @@ function CheckIn() {
         <div className="glass-strong relative overflow-hidden rounded-3xl p-5 glow-purple">
           <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-purple/30 blur-3xl" />
           <div className="relative flex items-center gap-3">
-            <img src={lunaImg} alt="" width={48} height={48} className="h-12 w-12 animate-float object-contain" />
+            <img
+              src={lunaImg}
+              alt=""
+              width={48}
+              height={48}
+              className="h-12 w-12 animate-float object-contain"
+            />
             <div>
               <p className="text-xs uppercase tracking-wider text-purple">Luna asks</p>
               <p className="text-sm font-semibold">{prompts[step - 1]}</p>
@@ -66,7 +116,10 @@ function CheckIn() {
 
       {done && (
         <section className="px-5 pt-5">
-          <SuccessState title="Check-in saved 💜" body="Luna noted this. Your garden grew a little." />
+          <SuccessState
+            title="Check-in saved 💜"
+            body="Luna noted this. Your garden grew a little."
+          />
         </section>
       )}
 
@@ -92,7 +145,10 @@ function CheckIn() {
             <p className="text-center text-4xl">{["🪫", "🔋", "⚡", "✨", "🌟"][energy]}</p>
             <p className="mt-2 text-center text-sm font-semibold">{energyLabels[energy]}</p>
             <input
-              type="range" min={0} max={4} value={energy}
+              type="range"
+              min={0}
+              max={4}
+              value={energy}
               onChange={(e) => setEnergy(Number(e.target.value))}
               className="mt-4 w-full accent-purple"
             />
@@ -129,7 +185,7 @@ function CheckIn() {
             <Sparkles className="h-3.5 w-3.5" />
             <span className="font-semibold uppercase tracking-wider">Luna whispers</span>
           </div>
-          <p className="mt-2 text-sm leading-relaxed">{luna.whispers[step - 1]}</p>
+          <p className="mt-2 text-sm leading-relaxed">{lunaWhisper}</p>
         </div>
       </section>
 
@@ -137,7 +193,7 @@ function CheckIn() {
         <div className="mx-auto max-w-md">
           <button
             onClick={next}
-            disabled={step === 1 && !mood}
+            disabled={(step === 1 && !mood) || saving}
             className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple/30 disabled:opacity-50"
           >
             {step === 4 ? "Send to Luna" : "Continue"}

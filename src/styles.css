@@ -37,7 +37,7 @@
 }
 
 :root, .dark {
-  --radius: 1.5rem;
+  --radius: 1.25rem;
   --background: oklch(0.08 0.02 265);
   --foreground: oklch(0.98 0.01 250);
   --surface: oklch(0.14 0.03 260);
@@ -51,7 +51,7 @@
   --secondary-foreground: oklch(0.1 0.02 260);
   --purple: oklch(0.65 0.22 295);
   --muted: oklch(0.2 0.03 260);
-  --muted-foreground: oklch(0.7 0.03 250);
+  --muted-foreground: oklch(0.76 0.03 250);
   --accent: oklch(0.65 0.22 295);
   --accent-foreground: oklch(0.98 0.01 250);
   --destructive: oklch(0.65 0.22 25);
@@ -104,7 +104,8 @@
   html, body { background-color: var(--color-background); color: var(--color-foreground); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; overscroll-behavior-y: none; }
   body { background-image: radial-gradient(ellipse at top, var(--bg-glow-1), transparent 60%), radial-gradient(ellipse at bottom, var(--bg-glow-2), transparent 60%); background-attachment: fixed; min-height: 100dvh; }
-  button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
   input, textarea, select { font-size: 16px; } /* prevent iOS zoom on focus */
   @media (min-width: 768px) { input, textarea, select { font-size: 14px; } }
 }
@@ -113,12 +114,14 @@
   background: linear-gradient(135deg, var(--glass-bg-from), var(--glass-bg-to));
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.04), 0 10px 30px -24px oklch(0 0 0 / 0.8);
 }
 
 @utility glass-strong {
   background: linear-gradient(135deg, var(--glass-strong-from), var(--glass-strong-to));
   backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.06), 0 18px 42px -28px oklch(0 0 0 / 0.9);
 }
 
 @utility glow-cyan {
@@ -207,4 +210,13 @@
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

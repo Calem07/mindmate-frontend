@@ -13,15 +13,16 @@ export function BottomNav() {
   const { pathname } = useLocation();
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto max-w-md px-4 pb-3 pt-2">
-        <div className="glass-strong flex items-center justify-around rounded-3xl px-2 py-2.5">
+      <div className="mx-auto max-w-md px-3 pb-4 pt-2">
+        <div className="glass-strong flex items-center justify-around rounded-3xl px-1.5 py-2">
           {items.map(({ to, label, icon: Icon }) => {
             const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
             return (
               <Link
                 key={to}
                 to={to}
-                className="relative flex flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-1.5 transition"
+                aria-current={active ? "page" : undefined}
+                className="relative flex min-h-11 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 transition duration-200 active:scale-95"
               >
                 {active && (
                   <span className="absolute inset-0 rounded-2xl gradient-primary opacity-20" />

@@ -4,10 +4,11 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "preview": "vite preview",
+    "dev": "node --require ./tools/vite-windows.cjs ./node_modules/vite/bin/vite.js dev --configLoader runner",
+    "build": "node --require ./tools/vite-windows.cjs ./node_modules/vite/bin/vite.js build",
+    "build:dev": "node --require ./tools/vite-windows.cjs ./node_modules/vite/bin/vite.js build --mode development",
+    "start": "node .output/server/index.mjs",
+    "preview": "node --require ./tools/vite-windows.cjs ./node_modules/vite/bin/vite.js preview --configLoader runner",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
@@ -89,6 +90,6 @@
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.0.16"
+    "vite": "7.3.6"
   }
 }
