@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { EmptyState } from "@/components/StateViews";
-import { habitsApi, type Habit } from "@/lib/api/habits";
+import { habitsApi, type Habit, type HabitTemplate } from "@/lib/api/habits";
 import { Plus, CheckCircle2, Circle, Flame, Sprout } from "lucide-react";
 import { useLunaMoodTrigger } from "@/components/LunaSystemProvider";
 
@@ -22,6 +22,7 @@ function Habits() {
   const [list, setList] = useState<Habit[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [newHabit, setNewHabit] = useState("");
+  const [templates, setTemplates] = useState<HabitTemplate[]>([]);
   const bumpMood = useLunaMoodTrigger();
 
   useEffect(() => {
@@ -29,6 +30,7 @@ function Habits() {
       .today()
       .then(setList)
       .catch((err) => toast.error(err instanceof Error ? err.message : "Could not load habits"));
+    habitsApi.templates().then(setTemplates).catch(() => undefined);
   }, []);
 
   const toggle = async (id: string) => {
@@ -180,6 +182,19 @@ function Habits() {
               placeholder="e.g. Drink water with breakfast"
               className="mt-4 w-full rounded-2xl glass px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
             />
+            {templates.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">A few gentle ideas from Luna</p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {templates.slice(0, 5).map((template) => (
+                    <button key={template.id} onClick={async () => { try { await habitsApi.createFromTemplate(template.id); setList(await habitsApi.today()); setShowAdd(false); } catch (err) { toast.error(err instanceof Error ? err.message : "Could not plant habit"); } }} className="glass min-w-36 rounded-2xl p-3 text-left">
+                      <p className="text-xs font-semibold">{template.name}</p>
+                      <p className="mt-1 text-[10px] text-muted-foreground">{template.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <button
               onClick={add}
               className="mt-3 w-full rounded-2xl gradient-primary py-3 text-sm font-semibold text-white"

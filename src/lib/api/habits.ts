@@ -19,6 +19,7 @@ export type Habit = {
   streak: number;
   xp: number;
 };
+export type HabitTemplate = { id: string; code: string; name: string; icon: string; xpReward: number; description: string };
 type HabitResponse = { id: string; name: string; icon: string; xpReward: number };
 type TodayHabitResponse = {
   habit: HabitResponse;
@@ -37,6 +38,8 @@ const toStatus = (status: HabitStatus): BackendHabitStatus =>
   status === "done" ? "DONE" : status === "in_progress" ? "IN_PROGRESS" : "NOT_STARTED";
 
 export const habitsApi = {
+  templates: () => apiFetch<HabitTemplate[]>("/habits/templates"),
+  createFromTemplate: (id: string) => apiFetch<Habit>(`/habits/from-template/${id}`, { method: "POST" }),
   async today() {
     const rows = await apiFetch<TodayHabitResponse[]>("/habits/today");
     return rows.map(({ habit, log }) => ({

@@ -6,6 +6,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useLunaSystem } from "@/components/LunaSystemProvider";
 import { settingsApi } from "@/lib/api/settings";
 import { Bell, Shield, Sparkles, Moon, Sun, ChevronRight, HelpCircle, Mail } from "lucide-react";
+import { enablePushNotifications } from "@/lib/push";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -140,6 +141,7 @@ function Settings() {
                 onChange={(v) => {
                   const next = { ...notifs, [key]: v };
                   setNotifs(next);
+                  if (v && key === "daily") void enablePushNotifications();
                   updateSetting({
                     dailyReminder: next.daily,
                     streakReminders: next.streaks,
