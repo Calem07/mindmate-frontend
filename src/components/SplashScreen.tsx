@@ -33,8 +33,8 @@ export function SplashScreen() {
 
   // Never let the welcome overlay block a protected route while auth is settling.
   // The route guard remains responsible for redirecting unauthenticated users.
-  const protectedRouteWithoutUser = pathname !== "/" && minElapsed && !loading && !user;
-  if (protectedRouteWithoutUser) return null;
+  const routeHasLoadedPastSplash = pathname !== "/" && minElapsed;
+  if (routeHasLoadedPastSplash) return null;
 
   const showAuthCta = minElapsed && !loading && !user;
 
