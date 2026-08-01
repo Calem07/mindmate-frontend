@@ -28,7 +28,8 @@ export function SplashScreen() {
   }, [minElapsed, loading, user, dismissed]);
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  if (dismissed || HIDDEN_ROUTES.includes(pathname)) return null;
+  const sessionShown = typeof window !== "undefined" && sessionStorage.getItem("mindmate-splash-shown") === "1";
+  if (dismissed || sessionShown || HIDDEN_ROUTES.includes(pathname)) return null;
 
   const showAuthCta = minElapsed && !loading && !user;
 
