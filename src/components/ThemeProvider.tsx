@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 
 type Theme = "light" | "dark";
 const ThemeCtx = createContext<{ theme: Theme; toggle: () => void; setTheme: (t: Theme) => void }>({
@@ -7,15 +7,17 @@ const ThemeCtx = createContext<{ theme: Theme; toggle: () => void; setTheme: (t:
   setTheme: () => {},
 });
 
+function readStoredTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  return localStorage.getItem("theme") === "light" ? "light" : "dark";
+}
+
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>(readStoredTheme);
 
-  useEffect(() => {
-    const stored = (typeof window !== "undefined" && (localStorage.getItem("theme") as Theme | null)) || "dark";
-    setThemeState(stored);
-  }, []);
-
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("dark", theme === "dark");
     root.classList.toggle("light", theme === "light");
