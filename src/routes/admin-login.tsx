@@ -28,7 +28,7 @@ function AdminLoginPage() {
       await authApi.adminLogin({ email, password });
 
       toast.success("Welcome, admin 🛡️");
-      { sessionStorage.setItem("mindmate-splash-shown", "1"); navigate({ to: "/" }); }
+      navigate({ to: "/" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Admin sign in failed");
     } finally {

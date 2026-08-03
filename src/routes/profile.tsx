@@ -59,7 +59,6 @@ function Profile() {
 
   const handleLogout = async () => {
     authApi.logout();
-    sessionStorage.removeItem("mindmate-splash-shown");
     toast.success("Signed out. See you soon 💜");
     navigate({ to: "/signin" });
   };

@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
-import { SplashScreen } from "@/components/SplashScreen";
 import { LunaSystemProvider } from "@/components/LunaSystemProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
@@ -140,7 +139,6 @@ function RootComponent() {
           <AuthProvider>
             <NotificationProvider>
               <OnboardingProvider>
-                <SplashScreen />
                 <Outlet />
                 <Toaster richColors theme="system" position="top-center" />
               </OnboardingProvider>

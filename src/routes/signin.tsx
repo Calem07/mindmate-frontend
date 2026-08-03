@@ -25,7 +25,6 @@ function SignInPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      sessionStorage.setItem("mindmate-splash-shown", "1");
       navigate({ to: "/" });
     }
   }, [user, loading, navigate]);
@@ -37,7 +36,6 @@ function SignInPage() {
       await authApi.login({ email, password });
       toast.success("Welcome back 💜");
       {
-        sessionStorage.setItem("mindmate-splash-shown", "1");
         navigate({ to: "/" });
       }
     } catch (err) {

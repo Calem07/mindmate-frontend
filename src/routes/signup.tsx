@@ -27,7 +27,6 @@ function SignUpPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      sessionStorage.setItem("mindmate-splash-shown", "1");
       navigate({ to: "/" });
     }
   }, [user, loading, navigate]);
@@ -39,7 +38,6 @@ function SignUpPage() {
       const auth = await authApi.register({ displayName: name || email.split("@")[0], email, password });
       startOnboarding(auth.user.id);
       {
-        sessionStorage.setItem("mindmate-splash-shown", "1");
         navigate({ to: "/check-in" });
       }
     } catch (err) {
