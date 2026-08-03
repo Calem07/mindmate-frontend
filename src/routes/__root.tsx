@@ -140,7 +140,7 @@ function RootComponent() {
             <NotificationProvider>
               <OnboardingProvider>
                 <Outlet />
-                <Toaster richColors theme="system" position="top-center" />
+                <Toaster richColors theme="system" position="top-center" duration={90000} />
               </OnboardingProvider>
             </NotificationProvider>
           </AuthProvider>

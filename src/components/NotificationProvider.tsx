@@ -20,7 +20,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
       items.filter((item) => !shown.current.has(item.id)).slice(0, 3).forEach((item) => {
         shown.current.add(item.id);
-        toast.custom((toastId) => <div className="glass-strong w-[min(92vw,22rem)] rounded-3xl border border-white/10 p-4 shadow-2xl"><LunaNotification item={item} onOpen={() => { void notificationsApi.read(item.id); toast.dismiss(toastId); }} /></div>, { duration: 7000 });
+        toast.custom((toastId) => <div className="glass-strong w-[min(92vw,22rem)] rounded-3xl border border-white/10 p-4 shadow-2xl"><LunaNotification item={item} onOpen={() => { void notificationsApi.read(item.id); toast.dismiss(toastId); }} /></div>, { duration: 90000 });
         void notificationsApi.read(item.id);
       });
     };

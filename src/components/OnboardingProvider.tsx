@@ -45,7 +45,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       <div className="glass-strong w-[min(92vw,22rem)] rounded-3xl border border-white/10 p-4 shadow-2xl">
         <LunaPrompt item={item} onOpen={() => { void navigate({ to: item.route as never }); toast.dismiss(toastId); }} />
       </div>
-    ), { duration: 9000 });
+    ), { duration: 90000 });
     return () => toast.dismiss(id);
   }, [navigate, session, stage]);
 
