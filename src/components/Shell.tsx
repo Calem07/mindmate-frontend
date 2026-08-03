@@ -5,7 +5,7 @@ import { OfflineBanner } from "./OfflineBanner";
 export function Shell({ children }: { children: ReactNode }) {
   return (
     <div
-      className="relative mx-auto min-h-[100dvh] max-w-md pb-[calc(env(safe-area-inset-bottom)+8rem)]"
+      className="relative mx-auto min-h-[100dvh] max-w-md pb-8"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <OfflineBanner />
