@@ -40,6 +40,7 @@ function CheckIn() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [mood, setMood] = useState<Mood | null>(null);
   const [energy, setEnergy] = useState(2);
+  const [sleepHours, setSleepHours] = useState<number | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [note, setNote] = useState("");
   const [done, setDone] = useState(false);
@@ -67,6 +68,7 @@ function CheckIn() {
       await checkInsApi.save({
         mood,
         energy: energy + 1,
+        sleepHours: sleepHours ?? undefined,
         tags: selectedTags.map((tag) => tag.toLowerCase()),
         note: note.trim() || undefined,
       });
@@ -156,6 +158,34 @@ function CheckIn() {
               onChange={(e) => setEnergy(Number(e.target.value))}
               className="mt-4 w-full accent-purple"
             />
+            <div className="mt-6 border-t border-white/10 pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold">How long did you sleep?</p>
+                  <p className="text-xs text-muted-foreground">A gentle way to notice your rest.</p>
+                </div>
+                <span className="text-sm font-semibold text-purple">
+                  {sleepHours == null ? "Not tracked" : `${sleepHours}h`}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={12}
+                step={0.5}
+                value={sleepHours ?? 7}
+                onChange={(e) => setSleepHours(Number(e.target.value))}
+                className="mt-4 w-full accent-purple"
+                aria-label="Hours slept"
+              />
+              <button
+                type="button"
+                onClick={() => setSleepHours(null)}
+                className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline"
+              >
+                Skip for today
+              </button>
+            </div>
           </div>
         )}
 
