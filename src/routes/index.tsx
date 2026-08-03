@@ -128,10 +128,10 @@ function Home() {
           .reduce((sum, session) => sum + (session.duration ?? 0), 0);
         const items: TodayItem[] = [
           {
-            id: "check-in",
+            id: "reflection",
             icon: MessageCircle,
-            title: "Check in with Luna",
-            subtitle: "A soft moment to feel",
+            title: "Reflect with Luna",
+            subtitle: "A soft moment to notice",
             done: Boolean(checkIn),
             progress: checkIn ? undefined : 0,
             color: "purple",
@@ -250,8 +250,8 @@ function Home() {
             "{heroWhisper}"
           </p>
           <div className="relative mt-4 flex gap-2">
-            <Link to="/check-in" className="flex-1 rounded-2xl gradient-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-purple/30">
-              Check in with Luna
+            <Link to="/reflections" className="flex-1 rounded-2xl gradient-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-purple/30">
+              Reflect with Luna
             </Link>
             <Link to="/luna" className="glass flex items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-sm font-semibold">
               <MessageCircle className="h-4 w-4" />
@@ -365,7 +365,7 @@ function FocusItem({ id, icon: Icon, title, subtitle, done, progress, color, xp 
   id: string; icon: LucideIcon; title: string; subtitle: string; done?: boolean; progress?: number; color: "cyan" | "purple" | "teal"; xp?: number;
 }) {
   const colorMap = { cyan: "text-primary bg-primary/15", purple: "text-purple bg-purple/15", teal: "text-secondary bg-secondary/15" };
-  const route = id === "check-in" ? "/luna" : id === "focus" ? "/exam-focus" : id === "badges" ? "/badges" : undefined;
+  const route = id === "reflection" ? "/reflections" : id === "focus" ? "/exam-focus" : id === "badges" ? "/badges" : undefined;
   const item = (
     <div className="glass flex items-center gap-3 rounded-2xl p-3.5 transition hover:scale-[1.01]">
       <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${colorMap[color]}`}>
