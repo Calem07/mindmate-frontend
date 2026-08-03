@@ -347,11 +347,12 @@ function Home() {
   );
 }
 
-function FocusItem({ icon: Icon, title, subtitle, done, progress, color, xp }: {
-  icon: LucideIcon; title: string; subtitle: string; done?: boolean; progress?: number; color: "cyan" | "purple" | "teal"; xp?: number;
+function FocusItem({ id, icon: Icon, title, subtitle, done, progress, color, xp }: {
+  id: string; icon: LucideIcon; title: string; subtitle: string; done?: boolean; progress?: number; color: "cyan" | "purple" | "teal"; xp?: number;
 }) {
   const colorMap = { cyan: "text-primary bg-primary/15", purple: "text-purple bg-purple/15", teal: "text-secondary bg-secondary/15" };
-  return (
+  const route = id === "check-in" ? "/luna" : id === "focus" ? "/exam-focus" : undefined;
+  const item = (
     <div className="glass flex items-center gap-3 rounded-2xl p-3.5 transition hover:scale-[1.01]">
       <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${colorMap[color]}`}>
         <Icon className="h-5 w-5" />
@@ -379,4 +380,5 @@ function FocusItem({ icon: Icon, title, subtitle, done, progress, color, xp }: {
       </div>
     </div>
   );
+  return route ? <Link to={route} className="block">{item}</Link> : item;
 }
