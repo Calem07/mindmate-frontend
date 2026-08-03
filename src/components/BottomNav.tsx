@@ -12,7 +12,7 @@ const items = [
 
 export function BottomNav() {
   const { pathname } = useLocation();
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <nav
