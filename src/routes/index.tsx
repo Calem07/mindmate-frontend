@@ -250,8 +250,8 @@ function Home() {
             "{heroWhisper}"
           </p>
           <div className="relative mt-4 flex gap-2">
-            <Link to="/reflections" className="flex-1 rounded-2xl gradient-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-purple/30">
-              Reflect with Luna
+            <Link to="/check-in" className="flex-1 rounded-2xl gradient-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-purple/30">
+              Check in with Luna
             </Link>
             <Link to="/luna" className="glass flex items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-sm font-semibold">
               <MessageCircle className="h-4 w-4" />
