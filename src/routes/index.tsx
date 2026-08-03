@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, ChevronRight, Droplet, Brain, MessageCircle, Sparkles, BookOpen, Moon, Sun, Sunrise, Leaf, Lock, CheckCircle2, Target, Heart, type LucideIcon } from "lucide-react";
+import { Bell, ChevronRight, Droplet, Brain, MessageCircle, Sparkles, BookOpen, Moon, Sun, Sunrise, Leaf, Lock, CheckCircle2, Target, Heart, Trophy, type LucideIcon } from "lucide-react";
 import tree from "@/assets/tree.jpg";
 import { Shell } from "@/components/Shell";
 import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
@@ -12,6 +12,7 @@ import { goalsApi } from "@/lib/api/goals";
 import { habitsApi, type Habit } from "@/lib/api/habits";
 import { profileApi, type Profile } from "@/lib/api/profile";
 import { lunaApi } from "@/lib/api/luna";
+import { badgesApi } from "@/lib/api/badges";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -119,7 +120,8 @@ function Home() {
         goalsApi.list("ACTIVE", 1).catch(() => []),
         focusApi.sessions({ from: today, to: today, limit: 10 }).catch(() => []),
         gardenApi.get().catch(() => null),
-      ]).then(([checkIn, habits, goals, focusSessions, gardenSnapshot]) => {
+        badgesApi.list().catch(() => []),
+      ]).then(([checkIn, habits, goals, focusSessions, gardenSnapshot, badges]) => {
         const reward = (actionId: string) => gardenSnapshot?.careActions.find((action) => action.id === actionId)?.xpByStage[gardenSnapshot.currentStage];
         const completedFocus = focusSessions
           .filter((session) => session.completed)
@@ -162,7 +164,19 @@ function Home() {
           xp: reward("focus"),
         });
 
-        setTodayItems(items.slice(0, 4));
+        const earnedBadges = badges.filter((badge) => badge.earned).length;
+        const nextBadge = badges.find((badge) => !badge.earned);
+        items.push({
+          id: "badges",
+          icon: Trophy,
+          title: nextBadge ? `Earn ${nextBadge.name}` : "Badges collected",
+          subtitle: `${earnedBadges} of ${badges.length} collected`,
+          done: badges.length > 0 && earnedBadges === badges.length,
+          progress: badges.length ? (earnedBadges / badges.length) * 100 : 0,
+          color: "teal",
+        });
+
+        setTodayItems(items.slice(0, 5));
       }),
     ]);
   }, []);
@@ -351,7 +365,7 @@ function FocusItem({ id, icon: Icon, title, subtitle, done, progress, color, xp 
   id: string; icon: LucideIcon; title: string; subtitle: string; done?: boolean; progress?: number; color: "cyan" | "purple" | "teal"; xp?: number;
 }) {
   const colorMap = { cyan: "text-primary bg-primary/15", purple: "text-purple bg-purple/15", teal: "text-secondary bg-secondary/15" };
-  const route = id === "check-in" ? "/luna" : id === "focus" ? "/exam-focus" : undefined;
+  const route = id === "check-in" ? "/luna" : id === "focus" ? "/exam-focus" : id === "badges" ? "/badges" : undefined;
   const item = (
     <div className="glass flex items-center gap-3 rounded-2xl p-3.5 transition hover:scale-[1.01]">
       <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${colorMap[color]}`}>
