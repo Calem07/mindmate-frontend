@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { EmptyState } from "@/components/StateViews";
 import { goalsApi, type Goal } from "@/lib/api/goals";
-import { Plus, Target, Trophy } from "lucide-react";
+import { CheckCircle2, Plus, Target, Trophy } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { advanceOnboarding } from "@/lib/onboarding";
 
@@ -53,6 +53,16 @@ function Goals() {
       if (advanceOnboarding(user?.id, "goals", "future-me")) navigate({ to: "/future-me" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not add goal");
+    }
+  };
+
+  const completeGoal = async (id: string) => {
+    try {
+      await goalsApi.complete(id);
+      setGoals((items) => items.filter((goal) => goal.id !== id));
+      toast.success("Goal complete. Luna is proud of this step.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not complete goal");
     }
   };
 
@@ -138,6 +148,16 @@ function Goals() {
                   style={{ width: `${g.pct}%` }}
                 />
               </div>
+              {tab === "Active" && (
+                <button
+                  type="button"
+                  onClick={() => void completeGoal(g.id)}
+                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-2xl glass py-2 text-xs font-semibold text-secondary"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Mark complete
+                </button>
+              )}
             </div>
           ))
         )}
