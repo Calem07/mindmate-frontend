@@ -1,10 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, ChevronRight, Droplet, Brain, MessageCircle, Sparkles, BookOpen, Moon, Sun, Sunrise, Leaf, Lock, CheckCircle2, Target, Heart, Trophy, type LucideIcon } from "lucide-react";
+import {
+  Bell,
+  ChevronRight,
+  Droplet,
+  Brain,
+  MessageCircle,
+  Sparkles,
+  BookOpen,
+  Moon,
+  Sun,
+  Sunrise,
+  Leaf,
+  Lock,
+  CheckCircle2,
+  Target,
+  Heart,
+  Trophy,
+  type LucideIcon,
+} from "lucide-react";
 import tree from "@/assets/tree.jpg";
 import { Shell } from "@/components/Shell";
 import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
 import { useAuth } from "@/components/AuthProvider";
+import { useNotifications } from "@/components/NotificationProvider";
 import { checkInsApi } from "@/lib/api/checkIns";
 import { focusApi } from "@/lib/api/focus";
 import { gardenApi, type Garden as GardenData, type GardenStage } from "@/lib/api/garden";
@@ -18,7 +37,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "MindMate — Your wellness companion" },
-      { name: "description", content: "MindMate is your AI-powered wellness, productivity and emotional growth companion." },
+      {
+        name: "description",
+        content:
+          "MindMate is your AI-powered wellness, productivity and emotional growth companion.",
+      },
     ],
   }),
   component: Home,
@@ -63,7 +86,10 @@ function deriveStage(xp: number, gardenStages: GardenStage[]) {
   const idx = gardenStages.reduce((acc, s, i) => (xp >= s.xp ? i : acc), 0);
   const stage = gardenStages[idx];
   const next = gardenStages[idx + 1] ?? stage;
-  const progress = next === stage ? 100 : Math.min(100, Math.max(0, ((xp - stage.xp) / (next.xp - stage.xp)) * 100));
+  const progress =
+    next === stage
+      ? 100
+      : Math.min(100, Math.max(0, ((xp - stage.xp) / (next.xp - stage.xp)) * 100));
   return { stage, next, progress };
 }
 
@@ -99,6 +125,7 @@ function Home() {
   // Only render the time-dependent icon/greeting after mount to avoid SSR hydration mismatch.
   const [hour, setHour] = useState<number | null>(null);
   const { user } = useAuth();
+  const { unreadCount } = useNotifications();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [garden, setGarden] = useState<GardenData | null>(null);
   const [todayItems, setTodayItems] = useState<TodayItem[]>([]);
@@ -106,8 +133,14 @@ function Home() {
   const [heroWhisper, setHeroWhisper] = useState("");
   useEffect(() => setHour(new Date().getHours()), []);
   useEffect(() => {
-    lunaApi.note("home").then((note) => setLunaNote(note.content)).catch(() => setLunaNote(""));
-    lunaApi.note("home-hero").then((note) => setHeroWhisper(note.content)).catch(() => setHeroWhisper(""));
+    lunaApi
+      .note("home")
+      .then((note) => setLunaNote(note.content))
+      .catch(() => setLunaNote(""));
+    lunaApi
+      .note("home-hero")
+      .then((note) => setHeroWhisper(note.content))
+      .catch(() => setHeroWhisper(""));
   }, []);
   useEffect(() => {
     const today = todayIso();
@@ -122,7 +155,10 @@ function Home() {
         gardenApi.get().catch(() => null),
         badgesApi.list().catch(() => []),
       ]).then(([checkIn, habits, goals, focusSessions, gardenSnapshot, badges]) => {
-        const reward = (actionId: string) => gardenSnapshot?.careActions.find((action) => action.id === actionId)?.xpByStage[gardenSnapshot.currentStage];
+        const reward = (actionId: string) =>
+          gardenSnapshot?.careActions.find((action) => action.id === actionId)?.xpByStage[
+            gardenSnapshot.currentStage
+          ];
         const completedFocus = focusSessions
           .filter((session) => session.completed)
           .reduce((sum, session) => sum + (session.duration ?? 0), 0);
@@ -193,7 +229,8 @@ function Home() {
   const xpToNext = profile?.xpToNext && profile.xpToNext > xp ? profile.xpToNext : undefined;
   const gardenStage = deriveStage(xp, garden?.gardenStages ?? []);
   const nextXp = xpToNext ?? (gardenStage.next?.xp || Math.max(xp, 1));
-  const xpProgress = nextXp > xp ? Math.min(100, Math.round((xp / nextXp) * 100)) : Math.round(gardenStage.progress);
+  const xpProgress =
+    nextXp > xp ? Math.min(100, Math.round((xp / nextXp) * 100)) : Math.round(gardenStage.progress);
   const bondPct = profile?.bondPct ?? 0;
   const completedToday = todayItems.filter((item) => item.done).length;
   return (
@@ -201,19 +238,27 @@ function Home() {
       <header className="flex items-start justify-between px-5 pt-6">
         <div>
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            {hour === null ? <span className="h-3.5 w-3.5" /> : <TimeIcon className="h-3.5 w-3.5" />}
+            {hour === null ? (
+              <span className="h-3.5 w-3.5" />
+            ) : (
+              <TimeIcon className="h-3.5 w-3.5" />
+            )}
             <span>{greeting}</span>
           </div>
-          <h1 className="mt-0.5 text-2xl font-bold tracking-tight">{displayName} <span className="text-xl">💜</span></h1>
+          <h1 className="mt-0.5 text-2xl font-bold tracking-tight">
+            {displayName} <span className="text-xl">💜</span>
+          </h1>
         </div>
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event("mindmate-notifications-open"))}
           className="glass relative flex h-11 w-11 items-center justify-center rounded-full"
-          aria-label="Notifications"
+          aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications"}
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-purple animate-pulse-glow" />
+          {unreadCount > 0 && (
+            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-purple animate-pulse-glow" />
+          )}
         </button>
       </header>
 
@@ -225,8 +270,16 @@ function Home() {
           {/* tiny floating sparkles */}
           <div className="pointer-events-none absolute inset-0">
             {[...Array(6)].map((_, i) => (
-              <span key={i} className="absolute h-1 w-1 animate-float rounded-full bg-purple/70"
-                style={{ left: `${15 + i * 14}%`, top: `${10 + (i % 3) * 20}%`, animationDelay: `${i * 0.4}s`, animationDuration: `${5 + (i % 3)}s` }} />
+              <span
+                key={i}
+                className="absolute h-1 w-1 animate-float rounded-full bg-purple/70"
+                style={{
+                  left: `${15 + i * 14}%`,
+                  top: `${10 + (i % 3) * 20}%`,
+                  animationDelay: `${i * 0.4}s`,
+                  animationDuration: `${5 + (i % 3)}s`,
+                }}
+              />
             ))}
           </div>
           <div className="relative flex items-start gap-4">
@@ -237,23 +290,38 @@ function Home() {
             <div className="flex-1 pt-1">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold">Luna</h2>
-                <span className="rounded-full bg-purple/20 px-2 py-0.5 text-[10px] font-semibold text-purple">LV {level} · {bondLabel(bondPct)}</span>
+                <span className="rounded-full bg-purple/20 px-2 py-0.5 text-[10px] font-semibold text-purple">
+                  LV {level} · {bondLabel(bondPct)}
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground">{bondPct}% Bond · {lunaMoodLabel(bondPct)}</p>
+              <p className="text-xs text-muted-foreground">
+                {bondPct}% Bond · {lunaMoodLabel(bondPct)}
+              </p>
               <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                <div className="h-full gradient-primary rounded-full" style={{ width: `${bondPct}%` }} />
+                <div
+                  className="h-full gradient-primary rounded-full"
+                  style={{ width: `${bondPct}%` }}
+                />
               </div>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">{bondPct}% Bond · grows with each meaningful interaction</p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                {bondPct}% Bond · grows with each meaningful interaction
+              </p>
             </div>
           </div>
           <p className="relative mt-4 text-sm leading-relaxed text-foreground/90 italic">
             "{heroWhisper}"
           </p>
           <div className="relative mt-4 flex gap-2">
-            <Link to="/check-in" className="flex-1 rounded-2xl gradient-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-purple/30">
+            <Link
+              to="/check-in"
+              className="flex-1 rounded-2xl gradient-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-purple/30"
+            >
               Check in with Luna
             </Link>
-            <Link to="/luna" className="glass flex items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-sm font-semibold">
+            <Link
+              to="/luna"
+              className="glass flex items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-sm font-semibold"
+            >
               <MessageCircle className="h-4 w-4" />
               Talk
             </Link>
@@ -268,14 +336,19 @@ function Home() {
             <h3 className="text-base font-semibold">Today with Luna</h3>
             <p className="text-[11px] text-muted-foreground">Each step waters your garden 🌱</p>
           </div>
-          <span className="text-xs text-muted-foreground">{completedToday} of {todayItems.length} done</span>
+          <span className="text-xs text-muted-foreground">
+            {completedToday} of {todayItems.length} done
+          </span>
         </div>
         <div className="space-y-2.5">
           {todayItems.map((item) => (
             <FocusItem key={item.id} {...item} />
           ))}
         </div>
-        <Link to="/growth" className="mt-2.5 flex w-full items-center justify-between rounded-2xl glass px-4 py-3 text-sm">
+        <Link
+          to="/growth"
+          className="mt-2.5 flex w-full items-center justify-between rounded-2xl glass px-4 py-3 text-sm"
+        >
           <span className="text-muted-foreground">See all today's care</span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
@@ -288,28 +361,39 @@ function Home() {
             <div className="flex items-center justify-between px-5 pt-4">
               <div>
                 <h3 className="text-base font-semibold">Growth Garden</h3>
-                <p className="text-[11px] text-muted-foreground">Level {level} · {gardenStage.stage?.title ?? "Seed"}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Level {level} · {gardenStage.stage?.title ?? "Seed"}
+                </p>
               </div>
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="relative mt-2 h-52 overflow-hidden">
-              <img src={tree} alt="Your growing tree" width={1024} height={768} className="h-full w-full object-cover" loading="lazy" />
+              <img
+                src={tree}
+                alt="Your growing tree"
+                width={1024}
+                height={768}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent" />
               {/* magical floating particles */}
               <div className="pointer-events-none absolute inset-0">
                 {[...Array(14)].map((_, i) => (
-                  <span key={i}
+                  <span
+                    key={i}
                     className="absolute rounded-full bg-primary/70 animate-float"
                     style={{
                       width: `${2 + (i % 3)}px`,
                       height: `${2 + (i % 3)}px`,
-                      left: `${(i * 41) % 95 + 2}%`,
-                      bottom: `${(i * 23) % 70 + 10}%`,
+                      left: `${((i * 41) % 95) + 2}%`,
+                      bottom: `${((i * 23) % 70) + 10}%`,
                       animationDelay: `${i * 0.35}s`,
                       animationDuration: `${4 + (i % 4)}s`,
                       boxShadow: "0 0 8px currentColor",
                       color: i % 2 ? "oklch(0.74 0.14 210)" : "oklch(0.65 0.22 295)",
-                    }} />
+                    }}
+                  />
                 ))}
               </div>
               {/* glow under tree */}
@@ -328,13 +412,20 @@ function Home() {
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5">
                       <Sparkles className="h-3 w-3 text-secondary" />
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">Next unlock</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">
+                        Next unlock
+                      </p>
                     </div>
                     <p className="text-sm font-semibold">First Leaf will bloom</p>
                     <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full gradient-primary rounded-full" style={{ width: `${xpProgress}%` }} />
+                      <div
+                        className="h-full gradient-primary rounded-full"
+                        style={{ width: `${xpProgress}%` }}
+                      />
                     </div>
-                    <p className="mt-1 text-[10px] text-muted-foreground">{Math.max(0, nextXp - xp).toLocaleString()} XP to go</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      {Math.max(0, nextXp - xp).toLocaleString()} XP to go
+                    </p>
                   </div>
                 </div>
               </div>
@@ -351,21 +442,48 @@ function Home() {
             <Sparkles className="h-3.5 w-3.5" />
             <span className="font-semibold uppercase tracking-wider">A note from Luna</span>
           </div>
-          <p className="relative mt-3 text-base leading-relaxed">
-            {lunaNote}
+          <p className="relative mt-3 text-base leading-relaxed">{lunaNote}</p>
+          <p className="relative mt-2 text-xs text-muted-foreground">
+            — Luna, curled up beside you 🌙
           </p>
-          <p className="relative mt-2 text-xs text-muted-foreground">— Luna, curled up beside you 🌙</p>
         </div>
       </section>
     </Shell>
   );
 }
 
-function FocusItem({ id, icon: Icon, title, subtitle, done, progress, color, xp }: {
-  id: string; icon: LucideIcon; title: string; subtitle: string; done?: boolean; progress?: number; color: "cyan" | "purple" | "teal"; xp?: number;
+function FocusItem({
+  id,
+  icon: Icon,
+  title,
+  subtitle,
+  done,
+  progress,
+  color,
+  xp,
+}: {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  done?: boolean;
+  progress?: number;
+  color: "cyan" | "purple" | "teal";
+  xp?: number;
 }) {
-  const colorMap = { cyan: "text-primary bg-primary/15", purple: "text-purple bg-purple/15", teal: "text-secondary bg-secondary/15" };
-  const route = id === "reflection" ? "/reflections" : id === "focus" ? "/exam-focus" : id === "badges" ? "/badges" : undefined;
+  const colorMap = {
+    cyan: "text-primary bg-primary/15",
+    purple: "text-purple bg-purple/15",
+    teal: "text-secondary bg-secondary/15",
+  };
+  const route =
+    id === "reflection"
+      ? "/reflections"
+      : id === "focus"
+        ? "/exam-focus"
+        : id === "badges"
+          ? "/badges"
+          : undefined;
   const item = (
     <div className="glass flex items-center gap-3 rounded-2xl p-3.5 transition hover:scale-[1.01]">
       <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${colorMap[color]}`}>
@@ -377,22 +495,58 @@ function FocusItem({ id, icon: Icon, title, subtitle, done, progress, color, xp 
       </div>
       <div className="flex flex-col items-end gap-1">
         {xp !== undefined && (
-          <span className="text-[9px] font-semibold uppercase tracking-wider text-purple/80">+{xp} xp</span>
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-purple/80">
+            +{xp} xp
+          </span>
         )}
         {done ? (
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary/20">
-            <svg className="h-4 w-4 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg
+              className="h-4 w-4 text-secondary"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
           </div>
         ) : (
           <div className="relative h-7 w-7">
             <svg className="h-7 w-7 -rotate-90" viewBox="0 0 28 28">
-              <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" fill="none" className="text-white/10" />
-              <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" fill="none" strokeDasharray={`${(progress ?? 0) * 0.754} 100`} strokeLinecap="round" className="text-primary" />
+              <circle
+                cx="14"
+                cy="14"
+                r="12"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                fill="none"
+                className="text-white/10"
+              />
+              <circle
+                cx="14"
+                cy="14"
+                r="12"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                fill="none"
+                strokeDasharray={`${(progress ?? 0) * 0.754} 100`}
+                strokeLinecap="round"
+                className="text-primary"
+              />
             </svg>
           </div>
         )}
       </div>
     </div>
   );
-  return route ? <Link to={route} className="block">{item}</Link> : item;
+  return route ? (
+    <Link to={route} className="block">
+      {item}
+    </Link>
+  ) : (
+    item
+  );
 }
