@@ -140,9 +140,19 @@ function Habits() {
             const done = h.status === "done";
             const inProg = h.status === "in_progress";
             return (
-              <button
+              <div
                 key={h.id}
-                onClick={() => toggle(h.id)}
+                role="button"
+                tabIndex={0}
+                onClick={(event) => {
+                  if (!(event.target instanceof HTMLButtonElement)) void toggle(h.id);
+                }}
+                onKeyDown={(event) => {
+                  if ((event.key === "Enter" || event.key === " ") && event.target === event.currentTarget) {
+                    event.preventDefault();
+                    void toggle(h.id);
+                  }
+                }}
                 className="glass flex w-full items-center gap-3 rounded-2xl p-3.5 text-left transition active:scale-[0.99]"
               >
                 {done ? (
@@ -162,7 +172,17 @@ function Habits() {
                     {h.streak}
                   </div>
                 )}
-              </button>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void toggle(h.id);
+                  }}
+                  className="shrink-0 rounded-xl bg-secondary/10 px-2.5 py-1.5 text-[10px] font-semibold text-secondary"
+                >
+                  {done ? "Completed" : "Mark complete"}
+                </button>
+              </div>
             );
           })
         )}
