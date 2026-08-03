@@ -26,9 +26,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
     void poll(); void registerExistingPushPermission();
     const onVisible = () => { if (document.visibilityState === "visible") void poll(); };
+    const onNotificationRequest = () => void poll();
     document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("mindmate-notifications-open", onNotificationRequest);
     const timer = window.setInterval(() => void poll(), 15 * 60 * 1000);
-    return () => { cancelled = true; document.removeEventListener("visibilitychange", onVisible); window.clearInterval(timer); };
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("mindmate-notifications-open", onNotificationRequest);
+      window.clearInterval(timer);
+    };
   }, [session]);
   return <>{children}</>;
 }

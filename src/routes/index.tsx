@@ -192,10 +192,15 @@ function Home() {
           </div>
           <h1 className="mt-0.5 text-2xl font-bold tracking-tight">{displayName} <span className="text-xl">💜</span></h1>
         </div>
-        <Link to="/check-in" className="glass relative flex h-11 w-11 items-center justify-center rounded-full" aria-label="Notifications">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("mindmate-notifications-open"))}
+          className="glass relative flex h-11 w-11 items-center justify-center rounded-full"
+          aria-label="Notifications"
+        >
           <Bell className="h-5 w-5" />
           <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-purple animate-pulse-glow" />
-        </Link>
+        </button>
       </header>
 
       {/* Luna Card */}
