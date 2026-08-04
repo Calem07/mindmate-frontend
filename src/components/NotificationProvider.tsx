@@ -1,13 +1,60 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { useAuth } from "./AuthProvider";
 import { LunaAvatar } from "./LunaAvatar";
 import { notificationsApi, type AppNotification } from "@/lib/api/notifications";
 import { registerExistingPushPermission } from "@/lib/push";
 
-function LunaNotification({ item, onOpen }: { item: AppNotification; onOpen: () => void }) {
+function LunaNotification({
+  item,
+  onOpen,
+  onDismiss,
+}: {
+  item: AppNotification;
+  onOpen: () => void;
+  onDismiss: () => void;
+}) {
+  const startX = useRef<number | null>(null);
+  const suppressClick = useRef(false);
+  const [offset, setOffset] = useState(0);
+  const handlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    startX.current = event.clientX;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const handlePointerMove = (event: PointerEvent<HTMLButtonElement>) => {
+    if (startX.current !== null) setOffset(event.clientX - startX.current);
+  };
+  const handlePointerUp = () => {
+    if (Math.abs(offset) > 96) {
+      suppressClick.current = true;
+      onDismiss();
+      window.setTimeout(() => {
+        suppressClick.current = false;
+      }, 0);
+    } else setOffset(0);
+    startX.current = null;
+  };
   return (
-    <button onClick={onOpen} className="flex w-full items-start gap-3 text-left">
+    <button
+      onClick={() => {
+        if (!suppressClick.current) onOpen();
+      }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      className="flex w-full touch-pan-y items-start gap-3 text-left transition-transform duration-200"
+      style={{ transform: `translateX(${offset}px)` }}
+      aria-label={`${item.title}. Swipe to dismiss or tap to open.`}
+    >
       <LunaAvatar size="sm" mood="warm" />
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-semibold">{item.title}</span>
@@ -57,10 +104,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                       .finally(() => setUnreadCount((count) => Math.max(0, count - 1)));
                     toast.dismiss(toastId);
                   }}
+                  onDismiss={() => {
+                    void notificationsApi
+                      .dismiss(item.id)
+                      .finally(() => setUnreadCount((count) => Math.max(0, count - 1)));
+                    toast.dismiss(toastId);
+                  }}
                 />
               </div>
             ),
-            { duration: 90000 },
+            { duration: 30000 },
           );
         });
     };

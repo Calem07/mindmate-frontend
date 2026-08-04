@@ -82,9 +82,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1",
+      },
       { title: "MindMate — Your wellness companion" },
-      { name: "description", content: "AI-powered student wellness, productivity and emotional growth companion." },
+      {
+        name: "description",
+        content: "AI-powered student wellness, productivity and emotional growth companion.",
+      },
       { name: "author", content: "MindMate" },
       { name: "theme-color", content: "#03040B" },
       { name: "color-scheme", content: "dark" },
@@ -106,7 +112,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -140,7 +149,7 @@ function RootComponent() {
             <NotificationProvider>
               <OnboardingProvider>
                 <Outlet />
-                <Toaster richColors theme="system" position="top-center" duration={90000} />
+                <Toaster richColors theme="system" position="top-center" duration={30000} />
               </OnboardingProvider>
             </NotificationProvider>
           </AuthProvider>

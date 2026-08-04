@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Bell,
@@ -126,6 +126,7 @@ function Home() {
   const [hour, setHour] = useState<number | null>(null);
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [garden, setGarden] = useState<GardenData | null>(null);
   const [todayItems, setTodayItems] = useState<TodayItem[]>([]);
@@ -251,7 +252,10 @@ function Home() {
         </div>
         <button
           type="button"
-          onClick={() => window.dispatchEvent(new Event("mindmate-notifications-open"))}
+          onClick={() => {
+            window.dispatchEvent(new Event("mindmate-notifications-open"));
+            void navigate({ to: "/notifications" });
+          }}
           className="glass relative flex h-11 w-11 items-center justify-center rounded-full"
           aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications"}
         >

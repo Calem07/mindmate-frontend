@@ -15,6 +15,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReflectionsRouteImport } from './routes/reflections'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LunaRouteImport } from './routes/luna'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as InsightsRouteImport } from './routes/insights'
@@ -59,6 +60,11 @@ const ReflectionsRoute = ReflectionsRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LunaRoute = LunaRouteImport.update({
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
   '/luna': typeof LunaRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reflections': typeof ReflectionsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
   '/luna': typeof LunaRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reflections': typeof ReflectionsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
   '/luna': typeof LunaRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reflections': typeof ReflectionsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/journal'
     | '/luna'
+    | '/notifications'
     | '/profile'
     | '/reflections'
     | '/reset-password'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/journal'
     | '/luna'
+    | '/notifications'
     | '/profile'
     | '/reflections'
     | '/reset-password'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/journal'
     | '/luna'
+    | '/notifications'
     | '/profile'
     | '/reflections'
     | '/reset-password'
@@ -294,6 +306,7 @@ export interface RootRouteChildren {
   InsightsRoute: typeof InsightsRoute
   JournalRoute: typeof JournalRoute
   LunaRoute: typeof LunaRoute
+  NotificationsRoute: typeof NotificationsRoute
   ProfileRoute: typeof ProfileRoute
   ReflectionsRoute: typeof ReflectionsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/luna': {
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   InsightsRoute: InsightsRoute,
   JournalRoute: JournalRoute,
   LunaRoute: LunaRoute,
+  NotificationsRoute: NotificationsRoute,
   ProfileRoute: ProfileRoute,
   ReflectionsRoute: ReflectionsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
