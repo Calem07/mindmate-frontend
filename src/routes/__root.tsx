@@ -4,6 +4,8 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -13,6 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
+import { useAuth } from "@/components/AuthProvider";
 import { LunaSystemProvider } from "@/components/LunaSystemProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
@@ -146,15 +149,42 @@ function RootComponent() {
       <ThemeProvider>
         <LunaSystemProvider>
           <AuthProvider>
-            <NotificationProvider>
-              <OnboardingProvider>
-                <Outlet />
-                <Toaster richColors theme="system" position="top-center" duration={30000} />
-              </OnboardingProvider>
-            </NotificationProvider>
+            <SessionGate>
+              <NotificationProvider>
+                <OnboardingProvider>
+                  <Outlet />
+                  <Toaster richColors theme="system" position="top-center" duration={30000} />
+                </OnboardingProvider>
+              </NotificationProvider>
+            </SessionGate>
           </AuthProvider>
         </LunaSystemProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
+}
+
+const publicPaths = new Set([
+  "/signin",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/admin-login",
+  "/.lovable/oauth/consent",
+]);
+
+function SessionGate({ children }: { children: ReactNode }) {
+  const { session, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isPublic = publicPaths.has(location.pathname);
+
+  useEffect(() => {
+    if (!loading && !session && !isPublic) void navigate({ to: "/signin", replace: true });
+  }, [isPublic, loading, navigate, session]);
+
+  if (loading || (!session && !isPublic)) {
+    return <div className="min-h-[100dvh] bg-background" aria-busy="true" />;
+  }
+  return <>{children}</>;
 }
