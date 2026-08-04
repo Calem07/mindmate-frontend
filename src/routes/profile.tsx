@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { lunaToast } from "@/lib/lunaToast";
 import {
   Award,
   Cog,
@@ -51,15 +52,24 @@ function Profile() {
   useEffect(() => {
     void Promise.allSettled([
       profileApi.get().then(setProfile),
-      checkInsApi.list().then((rows) => setActivity((current) => ({ ...current, checkIns: rows.length }))),
-      habitsApi.today().then((rows) => setActivity((current) => ({ ...current, habits: rows.filter((row) => row.status === "done").length }))),
-      journalApi.list({ limit: 100 }).then((rows) => setActivity((current) => ({ ...current, journal: rows.length }))),
+      checkInsApi
+        .list()
+        .then((rows) => setActivity((current) => ({ ...current, checkIns: rows.length }))),
+      habitsApi.today().then((rows) =>
+        setActivity((current) => ({
+          ...current,
+          habits: rows.filter((row) => row.status === "done").length,
+        })),
+      ),
+      journalApi
+        .list({ limit: 100 })
+        .then((rows) => setActivity((current) => ({ ...current, journal: rows.length }))),
     ]);
   }, []);
 
   const handleLogout = async () => {
     authApi.logout();
-    toast.success("Signed out. See you soon 💜");
+    lunaToast("Signed out. See you soon 💜");
     navigate({ to: "/signin" });
   };
 
@@ -96,7 +106,9 @@ function Profile() {
                 Level {profile?.level ?? "-"} · {profile ? `${profile.bondPct}%` : "-"} Bond
               </p>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
-                {profile ? `${profile.xp.toLocaleString()} / ${profile.xpToNext.toLocaleString()} XP` : "- XP"}
+                {profile
+                  ? `${profile.xp.toLocaleString()} / ${profile.xpToNext.toLocaleString()} XP`
+                  : "- XP"}
               </p>
             </div>
           </div>

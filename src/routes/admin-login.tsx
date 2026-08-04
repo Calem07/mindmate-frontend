@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, Lock, Shield, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { lunaToast } from "@/lib/lunaToast";
 import { AuthLayout, Field } from "@/components/AuthLayout";
 import { authApi } from "@/lib/api/auth";
 
@@ -27,7 +28,7 @@ function AdminLoginPage() {
     try {
       await authApi.adminLogin({ email, password });
 
-      toast.success("Welcome, admin 🛡️");
+      lunaToast("Welcome, admin 🛡️");
       navigate({ to: "/" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Admin sign in failed");
@@ -43,7 +44,9 @@ function AdminLoginPage() {
       footer={
         <>
           Not an admin?{" "}
-          <Link to="/signin" className="font-semibold text-primary">Regular sign in</Link>
+          <Link to="/signin" className="font-semibold text-primary">
+            Regular sign in
+          </Link>
         </>
       }
     >

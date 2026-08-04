@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, ArrowRight, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { lunaToast } from "@/lib/lunaToast";
 import { AuthLayout, Field } from "@/components/AuthLayout";
 import { authApi } from "@/lib/api/auth";
 
@@ -29,7 +30,7 @@ function ForgotPasswordPage() {
         resetUrl: `${window.location.origin}/reset-password`,
       });
       setSent(true);
-      toast.success("Check your email for the reset link 💌");
+      lunaToast("Check your email for the reset link 💌");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send reset email");
     } finally {
@@ -44,7 +45,9 @@ function ForgotPasswordPage() {
       footer={
         <>
           Remembered it?{" "}
-          <Link to="/signin" className="font-semibold text-primary">Sign in</Link>
+          <Link to="/signin" className="font-semibold text-primary">
+            Sign in
+          </Link>
         </>
       }
     >
@@ -53,7 +56,8 @@ function ForgotPasswordPage() {
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <CheckCircle2 className="h-10 w-10 text-primary" />
             <p className="text-sm text-foreground/90">
-              If <span className="font-semibold">{email}</span> has an account, a reset link is on its way.
+              If <span className="font-semibold">{email}</span> has an account, a reset link is on
+              its way.
             </p>
             <p className="text-xs text-muted-foreground">Don't forget to check spam.</p>
           </div>

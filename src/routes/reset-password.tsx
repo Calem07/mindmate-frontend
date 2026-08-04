@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { lunaToast } from "@/lib/lunaToast";
 import { AuthLayout, Field } from "@/components/AuthLayout";
 import { authApi } from "@/lib/api/auth";
 
@@ -37,7 +38,7 @@ function ResetPasswordPage() {
       const token = new URLSearchParams(window.location.search).get("token");
       if (!token) throw new Error("Reset link is missing or invalid");
       await authApi.resetPassword({ token, password });
-      toast.success("Password updated 🎉");
+      lunaToast("Password updated 🎉");
       navigate({ to: "/signin" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not update password");
@@ -53,7 +54,9 @@ function ResetPasswordPage() {
       footer={
         <>
           Back to{" "}
-          <Link to="/signin" className="font-semibold text-primary">Sign in</Link>
+          <Link to="/signin" className="font-semibold text-primary">
+            Sign in
+          </Link>
         </>
       }
     >

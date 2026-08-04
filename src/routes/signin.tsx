@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { lunaToast } from "@/lib/lunaToast";
 import { useAuth } from "@/components/AuthProvider";
 import { AuthLayout, Field, GoogleIcon } from "@/components/AuthLayout";
 import { authApi } from "@/lib/api/auth";
@@ -34,7 +35,7 @@ function SignInPage() {
     setBusy(true);
     try {
       await authApi.login({ email, password });
-      toast.success("Welcome back 💜");
+      lunaToast("Welcome back 💜");
       {
         navigate({ to: "/" });
       }

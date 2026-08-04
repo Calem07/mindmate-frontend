@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { lunaToast } from "@/lib/lunaToast";
 import { Shell, ScreenHeader } from "@/components/Shell";
 import { EmptyState } from "@/components/StateViews";
 import { goalsApi, type Goal } from "@/lib/api/goals";
@@ -32,7 +33,11 @@ function Goals() {
       .list(tab === "Active" ? "ACTIVE" : "COMPLETED")
       .then((rows) => {
         setGoals(rows);
-        if (tab === "Active" && rows.length > 0 && advanceOnboarding(user?.id, "goals", "future-me")) {
+        if (
+          tab === "Active" &&
+          rows.length > 0 &&
+          advanceOnboarding(user?.id, "goals", "future-me")
+        ) {
           navigate({ to: "/future-me" });
         }
       })
@@ -60,7 +65,7 @@ function Goals() {
     try {
       await goalsApi.complete(id);
       setGoals((items) => items.filter((goal) => goal.id !== id));
-      toast.success("Goal complete. Luna is proud of this step.");
+      lunaToast("Goal complete. Luna is proud of this step.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not complete goal");
     }

@@ -25,6 +25,7 @@ import { LunaAvatar, LunaMoodDot, type LunaMood } from "@/components/LunaAvatar"
 import { useAuth } from "@/components/AuthProvider";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { lunaToast } from "@/lib/lunaToast";
 import ReactMarkdown from "react-markdown";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { lunaApi, type LunaContext } from "@/lib/api/luna";
@@ -255,7 +256,10 @@ function LunaScreen() {
     const latestCheckIn = lunaContext?.latestCheckIn;
     const streakDays = lunaContext?.profile?.streakDays ?? 0;
     const daysSinceCheckIn = latestCheckIn
-      ? Math.max(0, Math.floor((today.getTime() - new Date(latestCheckIn.date).getTime()) / 86400000))
+      ? Math.max(
+          0,
+          Math.floor((today.getTime() - new Date(latestCheckIn.date).getTime()) / 86400000),
+        )
       : null;
     const isSameDay = daysSinceCheckIn === 0;
 
@@ -410,7 +414,7 @@ function LunaScreen() {
         },
       ]);
       setError(null);
-      toast.success("Chat cleared");
+      lunaToast("Chat cleared");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't clear chat");
     }
@@ -469,7 +473,8 @@ function LunaScreen() {
             </span>
             <span>
               <Heart className="mr-1 inline h-3 w-3 text-purple" />
-              {lunaContext?.profile?.bond ?? "—"}{lunaContext?.profile ? "%" : ""} Bond
+              {lunaContext?.profile?.bond ?? "—"}
+              {lunaContext?.profile ? "%" : ""} Bond
             </span>
             <span>
               <Award className="mr-1 inline h-3 w-3 text-primary" />
