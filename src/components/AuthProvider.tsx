@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
       clearStoredAuth();
       setState({ user: null, session: null, loading: false });
-      void navigate({ to: "/signin" });
+      void navigate({ to: "/", replace: true });
     };
     const sync = () => {
       const auth = authApi.current() ?? getStoredAuth();

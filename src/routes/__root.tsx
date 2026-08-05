@@ -19,6 +19,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { LunaSystemProvider } from "@/components/LunaSystemProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
+import { SplashScreen } from "@/components/SplashScreen";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -150,12 +151,7 @@ function RootComponent() {
         <LunaSystemProvider>
           <AuthProvider>
             <SessionGate>
-              <NotificationProvider>
-                <OnboardingProvider>
-                  <Outlet />
-                  <Toaster richColors theme="system" position="top-center" duration={30000} />
-                </OnboardingProvider>
-              </NotificationProvider>
+              <SplashAwareContent />
             </SessionGate>
           </AuthProvider>
         </LunaSystemProvider>
@@ -165,6 +161,7 @@ function RootComponent() {
 }
 
 const publicPaths = new Set([
+  "/",
   "/signin",
   "/signup",
   "/forgot-password",
@@ -178,13 +175,26 @@ function SessionGate({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const isPublic = publicPaths.has(location.pathname);
+  const isEntry = location.pathname === "/";
 
   useEffect(() => {
-    if (!loading && !session && !isPublic) void navigate({ to: "/signin", replace: true });
+    if (!loading && !session && !isPublic) void navigate({ to: "/", replace: true });
   }, [isPublic, loading, navigate, session]);
 
   if (loading || (!session && !isPublic)) {
     return <div className="min-h-[100dvh] bg-background" aria-busy="true" />;
   }
+  if (isEntry && !session) return <SplashScreen />;
   return <>{children}</>;
+}
+
+function SplashAwareContent() {
+  return (
+    <NotificationProvider>
+      <OnboardingProvider>
+        <Outlet />
+        <Toaster richColors theme="system" position="top-center" duration={30000} />
+      </OnboardingProvider>
+    </NotificationProvider>
+  );
 }

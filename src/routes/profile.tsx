@@ -67,10 +67,10 @@ function Profile() {
     ]);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     authApi.logout();
     lunaToast("Signed out. See you soon 💜");
-    navigate({ to: "/signin" });
+    void navigate({ to: "/", replace: true });
   };
 
   return (
