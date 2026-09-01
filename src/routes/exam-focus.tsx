@@ -95,7 +95,7 @@ function ExamFocus() {
           <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-purple/30 blur-3xl" />
           <div className="absolute -bottom-12 -left-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
 
-          <div className="relative">
+          <div className={`relative rounded-full ${running ? "motion-focus-live" : ""}`}>
             <svg className="h-56 w-56 -rotate-90" viewBox="0 0 200 200">
               <circle
                 cx="100"
@@ -115,6 +115,7 @@ function ExamFocus() {
                 fill="none"
                 strokeLinecap="round"
                 strokeDasharray={`${pct * 5.52} 1000`}
+                style={{ transition: "stroke-dasharray 300ms linear" }}
               />
               <defs>
                 <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -139,13 +140,13 @@ function ExamFocus() {
                 setRunning(false);
                 setSecondsLeft(preset.focus * 60);
               }}
-              className="glass flex h-12 w-12 items-center justify-center rounded-full"
+              className="glass motion-press flex h-12 w-12 items-center justify-center rounded-full"
             >
               <RotateCcw className="h-5 w-5" />
             </button>
             <button
               onClick={toggleRunning}
-              className="flex h-14 w-14 items-center justify-center rounded-full gradient-primary glow-cyan"
+              className="motion-press flex h-14 w-14 items-center justify-center rounded-full gradient-primary glow-cyan"
             >
               {running ? (
                 <Pause className="h-6 w-6 text-white" fill="currentColor" />
@@ -164,7 +165,7 @@ function ExamFocus() {
             <button
               key={p.id}
               onClick={() => setPreset(p)}
-              className={`glass rounded-2xl p-3 text-center ${preset.id === p.id ? "ring-2 ring-purple" : ""}`}
+              className={`glass motion-press rounded-2xl p-3 text-center ${preset.id === p.id ? "ring-2 ring-purple" : ""}`}
             >
               <p className="text-sm font-bold">
                 {p.focus}/{p.brk}

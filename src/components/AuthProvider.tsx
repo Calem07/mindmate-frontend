@@ -6,6 +6,7 @@ import { clearStoredAuth, getStoredAuth, onUnauthorized, type StoredAuth } from 
 type ApiUser = {
   id: string;
   email: string;
+  roles?: string[];
   user_metadata: {
     display_name?: string;
     avatar_url?: string | null;
@@ -27,6 +28,7 @@ function stateFromAuth(auth: StoredAuth | null): AuthState {
   const user: ApiUser = {
     id: auth.user.id,
     email: auth.user.email,
+    roles: auth.user.roles,
     user_metadata: {
       display_name: auth.user.displayName,
       avatar_url: auth.user.avatarUrl,

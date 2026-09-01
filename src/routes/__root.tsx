@@ -167,7 +167,6 @@ const publicPaths = new Set([
   "/forgot-password",
   "/reset-password",
   "/admin-login",
-  "/.lovable/oauth/consent",
 ]);
 
 function SessionGate({ children }: { children: ReactNode }) {

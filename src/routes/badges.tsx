@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Shell, ScreenHeader } from "@/components/Shell";
+import { AnimatedNumber, AnimatedProgress, MotionReveal } from "@/components/Motion";
 import { EmptyState } from "@/components/StateViews";
 import { badgesApi, type Badge } from "@/lib/api/badges";
 import { challengesApi, type Challenge } from "@/lib/api/challenges";
@@ -69,14 +70,15 @@ function Badges() {
             <div>
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Collected</p>
               <p className="text-xl font-bold">
-                <span className="text-gradient">{earned}</span> / {badges.length} badges
+                <AnimatedNumber value={earned} className="text-gradient" /> / {badges.length} badges
               </p>
             </div>
           </div>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full gradient-primary rounded-full"
-              style={{ width: `${badges.length ? (earned / badges.length) * 100 : 0}%` }}
+            <AnimatedProgress
+              value={badges.length ? (earned / badges.length) * 100 : 0}
+              label="Badge collection progress"
+              className="h-full rounded-full gradient-primary"
             />
           </div>
         </div>
@@ -106,10 +108,11 @@ function Badges() {
             />
           ) : (
             <div className="grid grid-cols-3 gap-3">
-              {badges.map((b) => (
+              {badges.map((b, index) => (
                 <div
                   key={b.id}
-                  className={`glass flex flex-col items-center gap-1 rounded-2xl p-3 text-center ${b.earned ? "" : "opacity-50 grayscale"}`}
+                  className={`glass motion-badge-reveal motion-press flex flex-col items-center gap-1 rounded-2xl p-3 text-center ${b.earned ? "" : "opacity-50 grayscale"}`}
+                  style={{ "--motion-delay": `${index * 45}ms` } as React.CSSProperties}
                 >
                   <BadgeIcon icon={b.icon} />
                   <p className="text-[11px] font-semibold">{b.name}</p>
@@ -128,24 +131,27 @@ function Badges() {
               body="New quests appear as you grow. Check back soon."
             />
           ) : (
-            challenges.map((c) => (
-              <div key={c.id} className="glass-strong rounded-3xl p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{c.name}</p>
-                    <p className="text-[11px] text-muted-foreground">{c.reward}</p>
+            challenges.map((c, index) => (
+              <MotionReveal key={c.id} delay={index * 45}>
+                <div className="glass-strong rounded-3xl p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{c.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{c.reward}</p>
+                    </div>
+                    <span className="shrink-0 text-sm font-bold text-gradient">
+                      {c.progress}/{c.total}
+                    </span>
                   </div>
-                  <span className="shrink-0 text-sm font-bold text-gradient">
-                    {c.progress}/{c.total}
-                  </span>
+                  <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                    <AnimatedProgress
+                      value={c.total > 0 ? (c.progress / c.total) * 100 : 0}
+                      label={`${c.name} challenge progress`}
+                      className="h-full rounded-full gradient-primary"
+                    />
+                  </div>
                 </div>
-                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full gradient-primary rounded-full"
-                    style={{ width: `${(c.progress / c.total) * 100}%` }}
-                  />
-                </div>
-              </div>
+              </MotionReveal>
             ))
           )}
         </section>

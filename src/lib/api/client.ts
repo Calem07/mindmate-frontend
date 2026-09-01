@@ -1,7 +1,12 @@
-const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim().replace(/^VITE_API_BASE_URL=/, "");
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim().replace(
+  /^VITE_API_BASE_URL=/,
+  "",
+);
 
-export const API_BASE_URL =
-  (configuredApiBaseUrl || "http://localhost:8080/api/v1").replace(/\/$/, "");
+export const API_BASE_URL = (configuredApiBaseUrl || "http://localhost:8080/api/v1").replace(
+  /\/$/,
+  "",
+);
 
 export const AUTH_STORAGE_KEY = "mindmate.auth";
 
@@ -39,7 +44,14 @@ export function getStoredAuth(): StoredAuth | null {
   const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as StoredAuth;
+    const auth = JSON.parse(raw) as StoredAuth;
+    const expiresAt = Date.parse(auth.expiresAt);
+    if (Number.isFinite(expiresAt) && expiresAt <= Date.now()) {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      window.dispatchEvent(new Event("mindmate-session-expired"));
+      return null;
+    }
+    return auth;
   } catch {
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
     return null;
@@ -81,6 +93,9 @@ export async function apiFetch<T>(
 
   if (response.status === 401) {
     clearStoredAuth();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("mindmate-session-expired"));
+    }
     unauthorizedHandler?.();
   }
 

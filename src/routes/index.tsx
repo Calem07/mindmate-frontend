@@ -22,6 +22,7 @@ import {
 import tree from "@/assets/tree.jpg";
 import { Shell } from "@/components/Shell";
 import { LunaAvatar, useAmbientLunaMood } from "@/components/LunaAvatar";
+import { AnimatedProgress, MotionReveal } from "@/components/Motion";
 import { useAuth } from "@/components/AuthProvider";
 import { useNotifications } from "@/components/NotificationProvider";
 import { checkInsApi } from "@/lib/api/checkIns";
@@ -268,7 +269,7 @@ function Home() {
 
       {/* Luna Card */}
       <section className="px-5 pt-5">
-        <div className="glass-strong relative overflow-hidden rounded-3xl p-5 glow-purple animate-fade-in">
+        <div className="glass-strong motion-bond-arrive relative overflow-hidden rounded-3xl p-5 glow-purple">
           <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-purple/30 blur-3xl" />
           <div className="absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-primary/20 blur-3xl" />
           {/* tiny floating sparkles */}
@@ -302,9 +303,10 @@ function Home() {
                 {bondPct}% Bond · {lunaMoodLabel(bondPct)}
               </p>
               <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full gradient-primary rounded-full"
-                  style={{ width: `${bondPct}%` }}
+                <AnimatedProgress
+                  value={bondPct}
+                  label="Luna bond progress"
+                  className="h-full rounded-full gradient-primary"
                 />
               </div>
               <p className="mt-1.5 text-[11px] text-muted-foreground">
@@ -345,8 +347,10 @@ function Home() {
           </span>
         </div>
         <div className="space-y-2.5">
-          {todayItems.map((item) => (
-            <FocusItem key={item.id} {...item} />
+          {todayItems.map((item, index) => (
+            <MotionReveal key={item.id} delay={index * 45}>
+              <FocusItem {...item} />
+            </MotionReveal>
           ))}
         </div>
         <Link
@@ -422,9 +426,10 @@ function Home() {
                     </div>
                     <p className="text-sm font-semibold">First Leaf will bloom</p>
                     <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                      <div
-                        className="h-full gradient-primary rounded-full"
-                        style={{ width: `${xpProgress}%` }}
+                      <AnimatedProgress
+                        value={xpProgress}
+                        label="Progress to next garden unlock"
+                        className="h-full rounded-full gradient-primary"
                       />
                     </div>
                     <p className="mt-1 text-[10px] text-muted-foreground">

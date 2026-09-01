@@ -5,7 +5,6 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 export default defineConfig({
   // Render runs the SSR bundle as a Node web service, so do not use the
@@ -17,10 +16,5 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
-  },
-  vite: {
-    // The Lovable MCP plugin is optional development tooling. Keep it opt-in so
-    // production builds work reliably outside the Lovable sandbox, especially on Windows.
-    plugins: process.env.ENABLE_LOVABLE_MCP === "true" ? [mcpPlugin()] : [],
   },
 });

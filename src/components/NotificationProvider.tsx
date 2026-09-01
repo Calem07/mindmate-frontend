@@ -95,7 +95,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           shown.current.add(item.id);
           toast.custom(
             (toastId) => (
-              <div className="glass-strong w-[min(92vw,22rem)] rounded-3xl border border-white/10 p-4 shadow-2xl">
+              <div className="glass-strong motion-luna-toast w-[min(92vw,22rem)] rounded-3xl border border-white/10 p-4 shadow-2xl">
                 <LunaNotification
                   item={item}
                   onOpen={() => {

@@ -28,6 +28,7 @@ import {
 import { lunaApi } from "@/lib/api/luna";
 
 import { Shell, ScreenHeader } from "@/components/Shell";
+import { AnimatedNumber, AnimatedProgress, MotionReveal } from "@/components/Motion";
 
 export const Route = createFileRoute("/garden")({
   head: () => ({
@@ -73,7 +74,7 @@ function deriveStage(xp: number, gardenStages: GardenStage[]) {
   if (gardenStages.length === 0) {
     const stage: GardenStage = {
       key: "seed",
-    emoji: "🌱",
+      emoji: "🌱",
       title: "Seed",
       xp: 0,
       reward: "Begin growth",
@@ -104,7 +105,10 @@ function Garden() {
       .catch((err) => toast.error(err instanceof Error ? err.message : "Could not load garden"));
   }, []);
   useEffect(() => {
-    lunaApi.note("garden").then((note) => setLunaNote(note.content)).catch(() => setLunaNote(""));
+    lunaApi
+      .note("garden")
+      .then((note) => setLunaNote(note.content))
+      .catch(() => setLunaNote(""));
   }, []);
 
   const gardenStages = useMemo(() => garden?.gardenStages ?? [], [garden]);
@@ -242,13 +246,14 @@ function Garden() {
             </span>
           </div>
           <p className="mt-1 text-2xl font-bold">
-            <span className="text-gradient">{user.xp.toLocaleString()}</span>
+            <AnimatedNumber value={user.xp} className="text-gradient" />
             <span className="text-muted-foreground"> / {nextStage.xp.toLocaleString()} XP</span>
           </p>
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full gradient-primary rounded-full glow-cyan transition-[width] duration-700"
-              style={{ width: `${Math.round(xpProgress * 100)}%` }}
+            <AnimatedProgress
+              value={Math.round(xpProgress * 100)}
+              label="Garden XP progress"
+              className="h-full rounded-full gradient-primary glow-cyan"
             />
           </div>
         </div>
@@ -326,7 +331,11 @@ function Garden() {
                 const isCurrent = i === currentStageIndex;
                 const isPreview = s.key === previewStage;
                 return (
-                  <li key={s.key} className="relative flex items-center gap-3">
+                  <li
+                    key={s.key}
+                    className="motion-badge-reveal relative flex items-center gap-3"
+                    style={{ "--motion-delay": `${i * 45}ms` } as React.CSSProperties}
+                  >
                     <button
                       type="button"
                       onClick={() => setPreviewStage(s.key)}
@@ -390,7 +399,7 @@ function Garden() {
               const s = gardenStages.find((g) => g.key === m.stage);
               if (!s) return null;
               return (
-                <li key={m.id} className="relative">
+                <li key={m.id} className="motion-badge-reveal relative">
                   <span className="absolute -left-[18px] top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-secondary ring-4 ring-secondary/20" />
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold">
@@ -444,8 +453,10 @@ function Garden() {
           </span>
         </div>
         <div className="mt-3 grid grid-cols-5 gap-2">
-          {careActions.map((a) => (
-            <CareTile key={a.id} action={a} stage={currentStage.key} onTap={triggerCare} />
+          {careActions.map((a, index) => (
+            <MotionReveal key={a.id} delay={index * 40}>
+              <CareTile action={a} stage={currentStage.key} onTap={triggerCare} />
+            </MotionReveal>
           ))}
         </div>
         <p className="mt-2 text-[10px] text-muted-foreground text-center">

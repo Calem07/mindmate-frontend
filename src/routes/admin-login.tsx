@@ -29,7 +29,7 @@ function AdminLoginPage() {
       await authApi.adminLogin({ email, password });
 
       lunaToast("Welcome, admin 🛡️");
-      navigate({ to: "/" });
+      navigate({ to: "/admin-analytics" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Admin sign in failed");
     } finally {
