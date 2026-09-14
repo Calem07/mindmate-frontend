@@ -47,30 +47,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let expiryTimer: number | undefined;
+    let disposed = false;
     const handleExpired = () => {
       if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
       clearStoredAuth();
-      setState({ user: null, session: null, loading: false });
+      if (!disposed) setState({ user: null, session: null, loading: false });
       void navigate({ to: "/", replace: true });
     };
     const sync = () => {
       const auth = authApi.current() ?? getStoredAuth();
-      setState(stateFromAuth(auth));
+      if (!auth) {
+        setState(stateFromAuth(null));
+        return;
+      }
+      setState({ ...stateFromAuth(auth), loading: true });
       if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
-      if (!auth) return;
       const tokenExpiry = Date.parse(auth.expiresAt);
-      const delay = Math.min(
-        Number.isFinite(tokenExpiry) ? tokenExpiry - Date.now() : MAX_SESSION_MS,
-        MAX_SESSION_MS,
-      );
+      const delay = Math.min(Number.isFinite(tokenExpiry) ? tokenExpiry - Date.now() : MAX_SESSION_MS, MAX_SESSION_MS);
       if (delay <= 0) handleExpired();
-      else expiryTimer = window.setTimeout(handleExpired, delay);
+      else {
+        expiryTimer = window.setTimeout(handleExpired, delay);
+        void authApi.me().then(() => {
+          if (!disposed) setState(stateFromAuth(authApi.current() ?? auth));
+        }).catch(() => {
+          // apiFetch invokes handleExpired for an invalid or expired token.
+        });
+      }
     };
     window.addEventListener("mindmate-session-expired", handleExpired);
     window.addEventListener("mindmate-auth-changed", sync);
-    onUnauthorized(sync);
+    onUnauthorized(handleExpired);
     sync();
     return () => {
+      disposed = true;
       onUnauthorized(null);
       window.removeEventListener("mindmate-session-expired", handleExpired);
       window.removeEventListener("mindmate-auth-changed", sync);
