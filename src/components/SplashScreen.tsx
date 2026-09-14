@@ -1,21 +1,10 @@
-import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Shield, Sparkles } from "lucide-react";
 import luna from "@/assets/luna.png";
-import { useAuth } from "@/components/AuthProvider";
 
-export function SplashScreen() {
-  const { user, loading } = useAuth();
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    if (!loading) setReady(true);
-  }, [loading]);
-
-  if (user || !ready) return null;
-
+export function LandingPage() {
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-background px-6 pb-10 pt-14 animate-in fade-in">
+    <div className="relative flex min-h-[100dvh] flex-col items-center justify-between overflow-hidden bg-background px-6 pb-10 pt-14">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple/30 blur-3xl animate-pulse-glow" />
         <div className="absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-3xl" />

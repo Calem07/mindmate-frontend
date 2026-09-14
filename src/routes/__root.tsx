@@ -19,7 +19,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { LunaSystemProvider } from "@/components/LunaSystemProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
-import { SplashScreen } from "@/components/SplashScreen";
+import { LandingPage } from "@/components/SplashScreen";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -183,7 +183,7 @@ function SessionGate({ children }: { children: ReactNode }) {
   if (loading || (!session && !isPublic)) {
     return <div className="min-h-[100dvh] bg-background" aria-busy="true" />;
   }
-  if (isEntry && !session) return <SplashScreen />;
+  if (isEntry && !session) return <LandingPage />;
   return <>{children}</>;
 }
 
