@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { ArrowRight, Shield, Sparkles } from "lucide-react";
 import luna from "@/assets/luna.png";
 
@@ -32,26 +31,26 @@ export function LandingPage() {
           </p>
           <p className="mt-1 text-sm text-foreground/90">Start your wellness journey today</p>
         </div>
-        <Link
-          to="/signup"
+        <a
+          href="/signup"
           className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-primary py-4 text-sm font-semibold text-white shadow-lg shadow-purple/30"
         >
           Create account
           <ArrowRight className="h-4 w-4" />
-        </Link>
-        <Link
-          to="/signin"
+        </a>
+        <a
+          href="/signin"
           className="glass flex w-full items-center justify-center rounded-2xl py-3.5 text-sm font-semibold"
         >
           Sign in
-        </Link>
-        <Link
-          to="/admin-login"
+        </a>
+        <a
+          href="/admin-login"
           className="flex w-full items-center justify-center gap-1.5 rounded-2xl py-2 text-xs font-medium text-muted-foreground"
         >
           <Shield className="h-3.5 w-3.5" />
           Admin login
-        </Link>
+        </a>
       </div>
     </div>
   );
