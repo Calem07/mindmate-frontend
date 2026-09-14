@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { authApi } from "@/lib/api/auth";
-import { clearStoredAuth, getStoredAuth, onUnauthorized, type StoredAuth } from "@/lib/api/client";
+import { ApiError, clearStoredAuth, getStoredAuth, onUnauthorized, type StoredAuth } from "@/lib/api/client";
 
 type ApiUser = {
   id: string;
@@ -44,6 +45,7 @@ function stateFromAuth(auth: StoredAuth | null): AuthState {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ user: null, session: null, loading: true });
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     let expiryTimer: number | undefined;
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleExpired = () => {
       if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
       clearStoredAuth();
+      queryClient.clear();
       if (!disposed) setState({ user: null, session: null, loading: false });
       void navigate({ to: "/", replace: true });
     };
@@ -69,8 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         expiryTimer = window.setTimeout(handleExpired, delay);
         void authApi.me().then(() => {
           if (!disposed) setState(stateFromAuth(authApi.current() ?? auth));
-        }).catch(() => {
+        }).catch((error) => {
           // apiFetch invokes handleExpired for an invalid or expired token.
+          if (!disposed && !(error instanceof ApiError && error.status === 401)) {
+            setState(stateFromAuth(authApi.current() ?? getStoredAuth() ?? auth));
+          }
         });
       }
     };
@@ -85,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("mindmate-auth-changed", sync);
       if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
     };
-  }, [navigate]);
+  }, [navigate, queryClient]);
 
   return <AuthCtx.Provider value={state}>{children}</AuthCtx.Provider>;
 }

@@ -34,6 +34,7 @@ export class ApiError extends Error {
 }
 
 let unauthorizedHandler: (() => void) | null = null;
+let authInvalidated = false;
 
 export function onUnauthorized(handler: (() => void) | null) {
   unauthorizedHandler = handler;
@@ -41,6 +42,7 @@ export function onUnauthorized(handler: (() => void) | null) {
 
 export function getStoredAuth(): StoredAuth | null {
   if (typeof window === "undefined") return null;
+  if (authInvalidated) return null;
   const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
   if (!raw) return null;
   try {
@@ -59,11 +61,31 @@ export function getStoredAuth(): StoredAuth | null {
 }
 
 export function setStoredAuth(auth: StoredAuth) {
+  authInvalidated = false;
   window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
 }
 
 export function clearStoredAuth() {
+  authInvalidated = true;
   window.localStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+function isPublicApiPath(path: string) {
+  return (
+    path === "/auth/login" ||
+    path === "/auth/register" ||
+    path === "/auth/password/forgot" ||
+    path === "/auth/password/reset" ||
+    path === "/admin/auth/login"
+  );
+}
+
+function notifyUnauthorized() {
+  clearStoredAuth();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("mindmate-session-expired"));
+  }
+  unauthorizedHandler?.();
 }
 
 function query(params?: Record<string, string | number | boolean | null | undefined>) {
@@ -79,24 +101,27 @@ export async function apiFetch<T>(
   path: string,
   init: RequestInit & {
     params?: Record<string, string | number | boolean | null | undefined>;
+    authRequired?: boolean;
   } = {},
 ): Promise<T> {
+  const { authRequired, params, ...requestInit } = init;
   const auth = getStoredAuth();
+  const requiresAuth = authRequired ?? !isPublicApiPath(path);
+  if (requiresAuth && !auth?.token) {
+    notifyUnauthorized();
+    throw new ApiError("Session expired. Please sign in again.", 401);
+  }
   const headers = new Headers(init.headers);
   if (!headers.has("Content-Type") && init.body) headers.set("Content-Type", "application/json");
   if (auth?.token) headers.set("Authorization", `Bearer ${auth.token}`);
 
   const response = await fetch(`${API_BASE_URL}${path}${query(init.params)}`, {
-    ...init,
+    ...requestInit,
     headers,
   });
 
   if (response.status === 401) {
-    clearStoredAuth();
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("mindmate-session-expired"));
-    }
-    unauthorizedHandler?.();
+    notifyUnauthorized();
   }
 
   if (!response.ok) {
